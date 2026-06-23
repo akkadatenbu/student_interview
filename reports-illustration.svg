@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f3f4f6" />
+  
+  <!-- Browser window frame -->
+  <rect x="50" y="50" width="700" height="500" rx="10" fill="white" stroke="#e5e7eb" stroke-width="2" />
+  <rect x="50" y="50" width="700" height="40" rx="10" fill="#f9fafb" stroke="#e5e7eb" stroke-width="2" />
+  
+  <!-- Browser dots -->
+  <circle cx="80" cy="70" r="6" fill="#ef4444" />
+  <circle cx="100" cy="70" r="6" fill="#f59e0b" />
+  <circle cx="120" cy="70" r="6" fill="#10b981" />
+  
+  <!-- URL bar -->
+  <rect x="150" y="60" width="550" height="20" rx="5" fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1" />
+  <text x="165" y="74" font-family="Arial" font-size="12" fill="#6b7280">http://localhost:3000/reports</text>
+  
+  <!-- Content area -->
+  <rect x="70" y="110" width="660" height="420" rx="5" fill="white" />
+  
+  <!-- Header -->
+  <rect x="70" y="110" width="660" height="50" fill="#3b82f6" rx="5" />
+  <text x="100" y="142" font-family="Arial" font-size="18" font-weight="bold" fill="white">ระบบสัมภาษณ์นักศึกษา</text>
+  
+  <!-- Navigation -->
+  <rect x="280" y="110" width="100" height="50" fill="#2563eb" rx="0" />
+  <text x="305" y="142" font-family="Arial" font-size="14" fill="white">หน้าแรก</text>
+  
+  <rect x="380" y="110" width="100" height="50" fill="#2563eb" rx="0" />
+  <text x="400" y="142" font-family="Arial" font-size="14" fill="white">สัมภาษณ์</text>
+  
+  <rect x="480" y="110" width="100" height="50" fill="#1d4ed8" rx="0" />
+  <text x="505" y="142" font-family="Arial" font-size="14" fill="white">รายงาน</text>
+  
+  <!-- Page header with export button -->
+  <text x="100" y="195" font-family="Arial" font-size="22" font-weight="bold" fill="#111827">รายงาน</text>
+  <rect x="570" y="175" width="130" height="30" rx="5" fill="#10b981" />
+  <text x="590" y="195" font-family="Arial" font-size="12" fill="white">ส่งออกข้อมูลเป็น Excel</text>
+  
+  <!-- Summary report -->
+  <rect x="100" y="210" width="600" height="200" rx="5" fill="white" stroke="#e5e7eb" stroke-width="2" />
+  <text x="120" y="235" font-family="Arial" font-size="16" font-weight="bold" fill="#111827">รายงานสรุปการสัมภาษณ์</text>
+  
+  <!-- Table header -->
+  <rect x="120" y="245" width="560" height="25" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1" />
+  <text x="130" y="262" font-family="Arial" font-size="11" font-weight="bold" fill="#4b5563">คณะ</text>
+  <text x="220" y="262" font-family="Arial" font-size="11" font-weight="bold" fill="#4b5563">หลักสูตร</text>
+  <text x="340" y="262" font-family="Arial" font-size="11" font-weight="bold" fill="#4b5563">นักศึกษาทั้งหมด</text>
+  <text x="440" y="262" font-family="Arial" font-size="11" font-weight="bold" fill="#4b5563">สัมภาษณ์แล้ว</text>
+  <text x="530" y="262" font-family="Arial" font-size="11" font-weight="bold" fill="#4b5563">ยังไม่ได้สัมภาษณ์</text>
+  <text x="640" y="262" font-family="Arial" font-size="11" font-weight="bold" fill="#4b5563">%</text>
+  
+  <!-- Table rows -->
+  <rect x="120" y="270" width="560" height="25" fill="white" stroke="#e5e7eb" stroke-width="1" />
+  <text x="130" y="287" font-family="Arial" font-size="11" fill="#111827">วิทยาศาสตร์</text>
+  <text x="220" y="287" font-family="Arial" font-size="11" fill="#111827">วิทยาการคอมพิวเตอร์</text>
+  <text x="365" y="287" font-family="Arial" font-size="11" fill="#111827">120</text>
+  <text x="450" y="287" font-family="Arial" font-size="11" fill="#111827">98</text>
+  <text x="560" y="287" font-family="Arial" font-size="11" fill="#111827">22</text>
+  <text x="640" y="287" font-family="Arial" font-size="11" fill="#111827">82%</text>
+  
+  <rect x="120" y="295" width="560" height="25" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1" />
+  <text x="130" y="312" font-family="Arial" font-size="11" fill="#111827">วิทยาศาสตร์</text>
+  <text x="220" y="312" font-family="Arial" font-size="11" fill="#111827">ฟิสิกส์</text>
+  <text x="365" y="312" font-family="Arial" font-size="11" fill="#111827">45</text>
+  <text x="450" y="312" font-family="Arial" font-size="11" fill="#111827">40</text>
+  <text x="560" y="312" font-family="Arial" font-size="11" fill="#111827">5</text>
+  <text x="640" y="312" font-family="Arial" font-size="11" fill="#111827">89%</text>
+  
+  <rect x="120" y="320" width="560" height="25" fill="white" stroke="#e5e7eb" stroke-width="1" />
+  <text x="130" y="337" font-family="Arial" font-size="11" fill="#111827">วิศวกรรมศาสตร์</text>
+  <text x="220" y="337" font-family="Arial" font-size="11" fill="#111827">วิศวกรรมคอมพิวเตอร์</text>
+  <text x="365" y="337" font-family="Arial" font-size="11" fill="#111827">80</text>
+  <text x="450" y="337" font-family="Arial" font-size="11" fill="#111827">65</text>
+  <text x="560" y="337" font-family="Arial" font-size="11" fill="#111827">15</text>
+  <text x="640" y="337" font-family="Arial" font-size="11" fill="#111827">81%</text>
+  
+  <rect x="120" y="345" width="560" height="25" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1" />
+  <text x="130" y="362" font-family="Arial" font-size="11" fill="#111827">วิศวกรรมศาสตร์</text>
+  <text x="220" y="362" font-family="Arial" font-size="11" fill="#111827">วิศวกรรมเครื่องกล</text>
+  <text x="365" y="362" font-family="Arial" font-size="11" fill="#111827">75</text>
+  <text x="450" y="362" font-family="Arial" font-size="11" fill="#111827">60</text>
+  <text x="560" y="362" font-family="Arial" font-size="11" fill="#111827">15</text>
+  <text x="640" y="362" font-family="Arial" font-size="11" fill="#111827">80%</text>
+  
+  <rect x="120" y="370" width="560" height="25" fill="white" stroke="#e5e7eb" stroke-width="1" />
+  <text x="130" y="387" font-family="Arial" font-size="11" fill="#111827">ศึกษาศาสตร์</text>
+  <text x="220" y="387" font-family="Arial" font-size="11" fill="#111827">การศึกษาปฐมวัย</text>
+  <text x="365" y="387" font-family="Arial" font-size="11" fill="#111827">60</text>
+  <text x="450" y="387" font-family="Arial" font-size="11" fill="#111827">55</text>
+  <text x="560" y="387" font-family="Arial" font-size="11" fill="#111827">5</text>
+  <text x="640" y="387" font-family="Arial" font-size="11" fill="#111827">92%</text>
+  
+  <!-- Not interviewed students -->
+  <rect x="100" y="420" width="600" height="170" rx="5" fill="white" stroke="#e5e7eb" stroke-width="2" />
+  <text x="120" y="445" font-family="Arial" font-size="16" font-weight="bold" fill="#111827">รายชื่อนักศึกษาที่ยังไม่ได้รับการสัมภาษณ์</text>
+  
+  <!-- Faculty filter -->
+  <text x="120" y="470" font-family="Arial" font-size="12" fill="#6b7280">กรองตามคณะ</text>
+  <rect x="200" y="457" width="150" height="20" rx="3" fill="white" stroke="#d1d5db" stroke-width="1" />
+  <text x="210" y="471" font-family="Arial" font-size="12" fill="#111827">วิทยาศาสตร์</text>
+  <polygon points="335,467 345,463 345,471" fill="#6b7280" />
+  
+  <!-- Table header -->
+  <rect x="120" y="485" width="560" height="25" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1" />
+  <text x="130" y="502" font-family="Arial" font-size="11" font-weight="bold" fill="#4b5563">รหัสนักศึกษา</text>
+  <text x="235" y="502" font-family="Arial" font-size="11" font-weight="bold" fill="#4b5563">ชื่อ-นามสกุล</text>
+  <text x="370" y="502" font-family="Arial" font-size="11" font-weight="bold" fill="#4b5563">คณะ</text>
+  <text x="470" y="502" font-family="Arial" font-size="11" font-weight="bold" fill="#4b5563">หลักสูตร</text>
+  <text x="590" y="502" font-family="Arial" font-size="11" font-weight="bold" fill="#4b5563">ดำเนินการ</text>
+  
+  <!-- Table rows -->
+  <rect x="120" y="510" width="560" height="25" fill="white" stroke="#e5e7eb" stroke-width="1" />
+  <text x="130" y="527" font-family="Arial" font-size="11" fill="#111827">6512345679</text>
+  <text x="235" y="527" font-family="Arial" font-size="11" fill="#111827">นางสาวมานี ดีใจ</text>
+  <text x="370" y="527" font-family="Arial" font-size="11" fill="#111827">วิทยาศาสตร์</text>
+  <text x="470" y="527" font-family="Arial" font-size="11" fill="#111827">วิทยาการคอมพิวเตอร์</text>
+  <text x="590" y="527" font-family="Arial" font-size="11" fill="#3b82f6">สัมภาษณ์</text>
+  
+  <rect x="120" y="535" width="560" height="25" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1" />
+  <text x="130" y="552" font-family="Arial" font-size="11" fill="#111827">6512345680</text>
+  <text x="235" y="552" font-family="Arial" font-size="11" fill="#111827">นายสมหมาย ใจกล้า</text>
+  <text x="370" y="552" font-family="Arial" font-size="11" fill="#111827">วิทยาศาสตร์</text>
+  <text x="470" y="552" font-family="Arial" font-size="11" fill="#111827">วิทยาการคอมพิวเตอร์</text>
+  <text x="590" y="552" font-family="Arial" font-size="11" fill="#3b82f6">สัมภาษณ์</text>
+  
+  <!-- Excel export popout -->
+  <rect x="550" y="320" width="200" height="170" rx="5" fill="white" stroke="#10b981" stroke-width="2" filter="drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.1))" />
+  <rect x="550" y="320" width="200" height="30" rx="5" fill="#10b981" />
+  <text x="600" y="340" font-family="Arial" font-size="12" font-weight="bold" fill="white">ส่งออกข้อมูลเป็น Excel</text>
+  
+  <rect x="570" y="360" width="160" height="40" rx="3" fill="#f9fafb" stroke="#d1d5db" stroke-width="1" />
+  <text x="600" y="383" font-family="Arial" font-size="11" fill="#111827">interview_data.xlsx</text>
+  <rect x="585" y="405" width="130" height="30" rx="5" fill="#10b981" />
+  <text x="620" y="425" font-family="Arial" font-size="12" fill="white">ดาวน์โหลด</text>
+  <text x="610" y="450" font-family="Arial" font-size="10" fill="#6b7280">กำลังเตรียมข้อมูล...</text>
+  <rect x="570" y="465" width="160" height="10" rx="5" fill="#e5e7eb" />
+  <rect x="570" y="465" width="80" height="10" rx="5" fill="#10b981" />
+</svg>

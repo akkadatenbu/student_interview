@@ -1,0 +1,64 @@
+student-interview-app/
+│
+├── backend/                # Node.js + Express API
+│   ├── config/             # คอนฟิก
+│   │   └── db.js           # การเชื่อมต่อฐานข้อมูล
+│   ├── controllers/        # ตัวควบคุม API
+│   │   ├── interviewerController.js
+│   │   ├── studentController.js
+│   │   ├── questionController.js
+│   │   └── interviewController.js
+│   ├── models/             # โมเดลฐานข้อมูล
+│   │   ├── interviewer.js
+│   │   ├── student.js
+│   │   ├── question.js
+│   │   └── interview.js
+│   ├── routes/             # เส้นทาง API
+│   │   ├── interviewerRoutes.js
+│   │   ├── studentRoutes.js
+│   │   ├── questionRoutes.js
+│   │   └── interviewRoutes.js
+│   ├── utils/              # เครื่องมือและฟังก์ชันช่วยเหลือ
+│   │   ├── excelExport.js  # การส่งออกข้อมูลเป็น Excel
+│   │   └── dbHelpers.js    # ฟังก์ชันช่วยเหลือฐานข้อมูล
+│   ├── .env                # ตัวแปรสภาพแวดล้อม
+│   ├── server.js           # ไฟล์หลัก
+│   ├── package.json
+│   └── seeds/              # ข้อมูลเริ่มต้น
+│       ├── seedInterviewers.js
+│       ├── seedStudents.js
+│       └── seedQuestions.js
+│
+├── frontend/               # React (Next.js) Application
+│   ├── public/             # ไฟล์สาธารณะ
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── page.jsx    # หน้าหลัก
+│   │   │   ├── interview/  # หน้าสัมภาษณ์
+│   │   │   │   └── page.jsx
+│   │   │   ├── reports/    # หน้ารายงาน
+│   │   │   │   └── page.jsx
+│   │   │   └── layout.jsx  # เลย์เอาท์แอพ
+│   │   ├── components/     # คอมโพเนนท์
+│   │   │   ├── InterviewerSelect.jsx
+│   │   │   ├── StudentSearch.jsx
+│   │   │   ├── QuestionForm.jsx
+│   │   │   ├── InterviewReport.jsx
+│   │   │   └── ExportButton.jsx
+│   │   ├── contexts/       # contexts สำหรับการจัดการสถานะ
+│   │   │   └── InterviewContext.jsx
+│   │   ├── hooks/          # ฮุค
+│   │   │   └── useInterview.js
+│   │   └── services/       # บริการเชื่อมต่อ API
+│   │       ├── api.js      # ตัวจัดการ API
+│   │       ├── interviewerService.js
+│   │       ├── studentService.js
+│   │       ├── questionService.js
+│   │       └── interviewService.js
+│   ├── tailwind.config.js
+│   ├── next.config.js
+│   └── package.json
+│
+├── docker-compose.yml      # ติดตั้ง PostgreSQL และแอพพลิเคชัน
+├── README.md               # คำแนะนำการใช้งานและติดตั้ง
+└── .gitignore              # ไฟล์ที่ไม่ต้องการใน git

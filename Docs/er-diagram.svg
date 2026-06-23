@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600">
+  <!-- Background -->
+  <rect width="900" height="600" fill="#f5f5f5" />
+  
+  <!-- Title -->
+  <text x="450" y="40" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="#333">ER Diagram ของระบบสัมภาษณ์นักศึกษา</text>
+  
+  <!-- Entity: interviewer -->
+  <rect x="100" y="100" width="180" height="140" fill="#c5e1a5" stroke="#558b2f" stroke-width="2" rx="5" />
+  <rect x="100" y="100" width="180" height="30" fill="#7cb342" stroke="#558b2f" stroke-width="2" rx="5" />
+  <text x="190" y="122" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="white">INTERVIEWER</text>
+  
+  <line x1="100" y1="130" x2="280" y2="130" stroke="#558b2f" stroke-width="2" />
+  
+  <text x="110" y="155" font-family="Arial" font-size="14" fill="#333">
+    <tspan x="110" dy="0" font-weight="bold">PK staff_id</tspan>
+    <tspan x="110" dy="25">staff_name</tspan>
+    <tspan x="110" dy="25">staff_faculty</tspan>
+  </text>
+  
+  <!-- Entity: student -->
+  <rect x="620" y="100" width="180" height="220" fill="#bbdefb" stroke="#1976d2" stroke-width="2" rx="5" />
+  <rect x="620" y="100" width="180" height="30" fill="#42a5f5" stroke="#1976d2" stroke-width="2" rx="5" />
+  <text x="710" y="122" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="white">STUDENT</text>
+  
+  <line x1="620" y1="130" x2="800" y2="130" stroke="#1976d2" stroke-width="2" />
+  
+  <text x="630" y="155" font-family="Arial" font-size="14" fill="#333">
+    <tspan x="630" dy="0" font-weight="bold">PK student_id</tspan>
+    <tspan x="630" dy="25">student_name</tspan>
+    <tspan x="630" dy="25">program</tspan>
+    <tspan x="630" dy="25">faculty</tspan>
+    <tspan x="630" dy="25">campus</tspan>
+    <tspan x="630" dy="25">level</tspan>
+    <tspan x="630" dy="25">phone</tspan>
+    <tspan x="630" dy="25">scholarship</tspan>
+    <tspan x="630" dy="25">graduated_school</tspan>
+    <tspan x="630" dy="25">hometown</tspan>
+  </text>
+  
+  <!-- Entity: question -->
+  <rect x="100" y="380" width="180" height="170" fill="#ffecb3" stroke="#ff8f00" stroke-width="2" rx="5" />
+  <rect x="100" y="380" width="180" height="30" fill="#ffc107" stroke="#ff8f00" stroke-width="2" rx="5" />
+  <text x="190" y="402" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="white">QUESTION</text>
+  
+  <line x1="100" y1="410" x2="280" y2="410" stroke="#ff8f00" stroke-width="2" />
+  
+  <text x="110" y="435" font-family="Arial" font-size="14" fill="#333">
+    <tspan x="110" dy="0" font-weight="bold">PK question_id</tspan>
+    <tspan x="110" dy="25">question_text</tspan>
+    <tspan x="110" dy="25">question_type</tspan>
+    <tspan x="110" dy="25">answer_options</tspan>
+    <tspan x="110" dy="25">condition_logic</tspan>
+    <tspan x="110" dy="25">condition_display</tspan>
+  </text>
+  
+  <!-- Entity: interview -->
+  <rect x="360" y="240" width="180" height="140" fill="#e1bee7" stroke="#7b1fa2" stroke-width="2" rx="5" />
+  <rect x="360" y="240" width="180" height="30" fill="#ab47bc" stroke="#7b1fa2" stroke-width="2" rx="5" />
+  <text x="450" y="262" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="white">INTERVIEW</text>
+  
+  <line x1="360" y1="270" x2="540" y2="270" stroke="#7b1fa2" stroke-width="2" />
+  
+  <text x="370" y="295" font-family="Arial" font-size="14" fill="#333">
+    <tspan x="370" dy="0" font-weight="bold">PK interview_id</tspan>
+    <tspan x="370" dy="25">FK student_id</tspan>
+    <tspan x="370" dy="25">FK interviewer_id</tspan>
+    <tspan x="370" dy="25">interview_date</tspan>
+    <tspan x="370" dy="25">completed</tspan>
+  </text>
+  
+  <!-- Entity: interview_answer -->
+  <rect x="620" y="380" width="180" height="140" fill="#ffcdd2" stroke="#c62828" stroke-width="2" rx="5" />
+  <rect x="620" y="380" width="180" height="30" fill="#ef5350" stroke="#c62828" stroke-width="2" rx="5" />
+  <text x="710" y="402" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="white">INTERVIEW_ANSWER</text>
+  
+  <line x1="620" y1="410" x2="800" y2="410" stroke="#c62828" stroke-width="2" />
+  
+  <text x="630" y="435" font-family="Arial" font-size="14" fill="#333">
+    <tspan x="630" dy="0" font-weight="bold">PK answer_id</tspan>
+    <tspan x="630" dy="25">FK interview_id</tspan>
+    <tspan x="630" dy="25">FK question_id</tspan>
+    <tspan x="630" dy="25">answer_text</tspan>
+    <tspan x="630" dy="25">created_at</tspan>
+  </text>
+  
+  <!-- Relationships -->
+  <!-- interviewer to interview -->
+  <line x1="190" y1="240" x2="190" y2="270" stroke="#555" stroke-width="2" />
+  <line x1="190" y1="270" x2="360" y2="270" stroke="#555" stroke-width="2" />
+  <circle cx="190" cy="240" r="5" fill="#555" />
+  <text x="210" y="260" font-family="Arial" font-size="12" fill="#555">1</text>
+  <text x="340" y="260" font-family="Arial" font-size="12" fill="#555">N</text>
+  
+  <!-- student to interview -->
+  <line x1="710" y1="320" x2="710" y2="340" stroke="#555" stroke-width="2" />
+  <line x1="710" y1="340" x2="540" y2="340" stroke="#555" stroke-width="2" />
+  <line x1="540" y1="340" x2="540" y2="310" stroke="#555" stroke-width="2" />
+  <circle cx="710" cy="320" r="5" fill="#555" />
+  <text x="720" y="340" font-family="Arial" font-size="12" fill="#555">1</text>
+  <text x="550" y="310" font-family="Arial" font-size="12" fill="#555">1</text>
+  
+  <!-- interview to interview_answer -->
+  <line x1="450" y1="380" x2="450" y2="450" stroke="#555" stroke-width="2" />
+  <line x1="450" y1="450" x2="620" y2="450" stroke="#555" stroke-width="2" />
+  <circle cx="450" cy="380" r="5" fill="#555" />
+  <text x="460" y="400" font-family="Arial" font-size="12" fill="#555">1</text>
+  <text x="600" y="440" font-family="Arial" font-size="12" fill="#555">N</text>
+  
+  <!-- question to interview_answer -->
+  <line x1="280" y1="465" x2="620" y2="465" stroke="#555" stroke-width="2" />
+  <circle cx="280" cy="465" r="5" fill="#555" />
+  <text x="290" y="455" font-family="Arial" font-size="12" fill="#555">1</text>
+  <text x="600" y="455" font-family="Arial" font-size="12" fill="#555">N</text>
+  
+  <!-- Legend -->
+  <rect x="360" y="530" width="180" height="30" fill="#f5f5f5" stroke="#333" stroke-width="1" rx="5" />
+  <text x="450" y="550" font-family="Arial" font-size="14" text-anchor="middle" fill="#333">PK - Primary Key, FK - Foreign Key</text>
+</svg>

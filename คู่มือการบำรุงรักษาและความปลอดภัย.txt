@@ -1,0 +1,300 @@
+# คู่มือการบำรุงรักษาและความปลอดภัยของระบบสัมภาษณ์นักศึกษา
+
+## การบำรุงรักษาระบบ
+
+### การสำรองข้อมูล (Backup)
+
+ควรตั้งเวลาสำรองข้อมูลอัตโนมัติเพื่อป้องกันการสูญหายของข้อมูล:
+
+```bash
+# สำรองฐานข้อมูล PostgreSQL
+pg_dump -U postgres -d student_interview > backup_$(date +%Y%m%d).sql
+
+# สำรองไฟล์ CSV เริ่มต้น
+tar -czvf data_backup_$(date +%Y%m%d).tar.gz ./data/
+```
+
+สามารถตั้งเวลาทำงานอัตโนมัติด้วย cron job:
+
+```bash
+# สำรองข้อมูลทุกวันเวลา 02:00 น.
+0 2 * * * /path/to/backup_script.sh
+```
+
+### การอัปเดตระบบ
+
+ควรตรวจสอบและอัปเดตแพ็คเกจต่างๆ เป็นประจำเพื่อรักษาความปลอดภัยและประสิทธิภาพ:
+
+```bash
+# อัปเดตแพ็คเกจ Backend
+cd backend
+npm outdated  # ตรวจสอบแพ็คเกจที่ล้าสมัย
+npm update    # อัปเดตแพ็คเกจ
+
+# อัปเดตแพ็คเกจ Frontend
+cd frontend
+npm outdated
+npm update
+```
+
+### การตรวจสอบ Log
+
+ควรตรวจสอบ log ของระบบเป็นประจำเพื่อระบุปัญหาที่อาจเกิดขึ้น:
+
+```bash
+# ตรวจสอบ log ของ PostgreSQL
+sudo tail -f /var/log/postgresql/postgresql-14-main.log
+
+# ตรวจสอบ log ของ Node.js
+tail -f backend/logs/error.log
+tail -f backend/logs/access.log
+```
+
+### การแก้ไขปัญหาทั่วไป
+
+#### ปัญหาการเชื่อมต่อฐานข้อมูล
+
+```bash
+# ตรวจสอบสถานะ PostgreSQL
+sudo systemctl status postgresql
+
+# รีสตาร์ท PostgreSQL
+sudo systemctl restart postgresql
+
+# ตรวจสอบการเชื่อมต่อ
+psql -U postgres -d student_interview -c "SELECT 1"
+```
+
+#### ปัญหา Backend ไม่ทำงาน
+
+```bash
+# ตรวจสอบสถานะ Node.js
+pm2 status
+
+# รีสตาร์ท Node.js
+pm2 restart server
+
+# ตรวจสอบ log
+pm2 logs
+```
+
+#### ปัญหา Frontend ไม่แสดงผล
+
+```bash
+# รีบิลด์ Frontend
+cd frontend
+npm run build
+
+# ตรวจสอบ log ของ Next.js
+pm2 logs
+```
+
+## ความปลอดภัยของระบบ
+
+### การรักษาความปลอดภัยฐานข้อมูล
+
+1. **ตั้งรหัสผ่านที่รัดกุม**:
+   ```sql
+   ALTER USER postgres WITH PASSWORD 'your_strong_password';
+   ```
+
+2. **จำกัดการเข้าถึงจากภายนอก**:
+   แก้ไขไฟล์ `pg_hba.conf` และ `postgresql.conf` เพื่อจำกัด IP ที่สามารถเข้าถึงได้
+
+3. **เข้ารหัสข้อมูลสำคัญ**:
+   ```sql
+   -- เพิ่มส่วนขยาย pgcrypto
+   CREATE EXTENSION pgcrypto;
+   
+   -- ตัวอย่างการเข้ารหัสข้อมูล
+   UPDATE student SET phone = pgp_sym_encrypt(phone, 'encryption_key') WHERE phone IS NOT NULL;
+   ```
+
+### การรักษาความปลอดภัย API
+
+1. **ใช้ rate limiting** เพื่อป้องกันการโจมตีแบบ brute force:
+   ```javascript
+   // backend/server.js
+   const rateLimit = require('express-rate-limit');
+   
+   const limiter = rateLimit({
+     windowMs: 15 * 60 * 1000, // 15 นาที
+     max: 100 // จำกัด 100 คำขอต่อ IP ภายใน 15 นาที
+   });
+   
+   app.use(limiter);
+   ```
+
+2. **ตั้งค่า CORS** อย่างเหมาะสม:
+   ```javascript
+   // backend/server.js
+   const cors = require('cors');
+   
+   app.use(cors({
+     origin: process.env.FRONTEND_URL,
+     credentials: true
+   }));
+   ```
+
+3. **ใช้ Helmet** เพื่อเพิ่มความปลอดภัย HTTP:
+   ```javascript
+   // backend/server.js
+   const helmet = require('helmet');
+   
+   app.use(helmet());
+   ```
+
+### การเพิ่มระบบยืนยันตัวตน (Authentication)
+
+หากต้องการเพิ่มระบบยืนยันตัวตนในอนาคต สามารถใช้ JSON Web Token (JWT):
+
+1. **ติดตั้งแพ็คเกจที่จำเป็น**:
+   ```bash
+   npm install jsonwebtoken bcrypt
+   ```
+
+2. **สร้างไฟล์ middleware สำหรับตรวจสอบ token**:
+   ```javascript
+   // backend/middleware/auth.js
+   const jwt = require('jsonwebtoken');
+   
+   module.exports = (req, res, next) => {
+     try {
+       const token = req.headers.authorization.split(' ')[1];
+       const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+       req.userData = { userId: decodedToken.userId };
+       next();
+     } catch (error) {
+       return res.status(401).json({
+         message: 'Authentication failed'
+       });
+     }
+   };
+   ```
+
+3. **ใช้ middleware ในเส้นทางที่ต้องการป้องกัน**:
+   ```javascript
+   // backend/routes/interviewRoutes.js
+   const auth = require('../middleware/auth');
+   
+   router.get('/', auth, interviewController.getAllInterviews);
+   ```
+
+### การเก็บข้อมูลส่วนบุคคลตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล
+
+ระบบนี้มีการจัดเก็บข้อมูลส่วนบุคคลของนักศึกษา จึงควรดำเนินการตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล (PDPA) ดังนี้:
+
+1. **แจ้งวัตถุประสงค์การเก็บข้อมูล**: ควรมีหน้าแสดงวัตถุประสงค์การเก็บข้อมูลและขออนุญาตก่อนเก็บข้อมูล
+
+2. **จำกัดการเข้าถึงข้อมูล**: ให้เฉพาะผู้ที่มีสิทธิ์เท่านั้นที่สามารถเข้าถึงข้อมูลได้
+
+3. **ลบข้อมูลเมื่อหมดความจำเป็น**: เพิ่มฟังก์ชันสำหรับลบข้อมูลนักศึกษาที่หมดความจำเป็นแล้ว
+
+4. **บันทึกการเข้าถึงข้อมูล**: เพิ่มระบบบันทึกประวัติการเข้าถึงข้อมูลส่วนบุคคล
+
+## การปรับแต่งประสิทธิภาพระบบ
+
+### การปรับแต่ง PostgreSQL
+
+ปรับแต่งไฟล์ `postgresql.conf` เพื่อเพิ่มประสิทธิภาพ:
+
+```
+# ปรับค่าหน่วยความจำ
+shared_buffers = 256MB      # ควรตั้งเป็น 25% ของ RAM
+work_mem = 16MB             # ค่าเหมาะสมสำหรับ query ที่ซับซ้อน
+maintenance_work_mem = 64MB # สำหรับการบำรุงรักษา
+
+# ปรับการเขียนลง disk
+wal_buffers = 8MB
+synchronous_commit = off    # ระวัง: อาจทำให้สูญเสียข้อมูลเล็กน้อยหากเซิร์ฟเวอร์ล่ม
+
+# การสแกนและ indexing
+random_page_cost = 3.0      # สำหรับ SSD
+effective_cache_size = 1GB  # ควรตั้งเป็น 50% ของ RAM
+```
+
+### การตั้งค่า Node.js
+
+ตั้งค่าเพิ่มเติมสำหรับ Node.js:
+
+```bash
+# ตั้งค่าโหมดการทำงาน
+export NODE_ENV=production
+
+# ตั้งค่าจำนวน worker
+export UV_THREADPOOL_SIZE=8
+```
+
+### การทำ Caching
+
+เพิ่ม Redis เพื่อทำ caching ข้อมูลที่เรียกใช้บ่อย:
+
+```javascript
+// backend/config/redis.js
+const redis = require('redis');
+const client = redis.createClient({
+  host: process.env.REDIS_HOST || 'localhost',
+  port: process.env.REDIS_PORT || 6379
+});
+
+client.on('error', err => {
+  console.error('Redis error:', err);
+});
+
+module.exports = client;
+```
+
+เพิ่ม caching สำหรับข้อมูลสถิติ:
+
+```javascript
+// backend/controllers/studentController.js
+const redis = require('../config/redis');
+
+// เพิ่ม caching สำหรับข้อมูลสรุป
+const getInterviewStatusSummary = async (req, res) => {
+  try {
+    // ลองดึงข้อมูลจาก Redis ก่อน
+    redis.get('summary_cache', async (err, data) => {
+      if (err) throw err;
+      
+      if (data) {
+        // ส่งข้อมูลจาก cache
+        return res.status(200).json({
+          success: true,
+          data: JSON.parse(data),
+          cache: true
+        });
+      } else {
+        // ดึงข้อมูลจากฐานข้อมูล
+        const result = await db.query(`...`);
+        
+        // บันทึกลง cache อายุ 5 นาที
+        redis.setex('summary_cache', 300, JSON.stringify(result.rows));
+        
+        res.status(200).json({
+          success: true,
+          data: result.rows,
+          cache: false
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error getting summary:', error);
+    res.status(500).json({
+      success: false,
+      message: 'ไม่สามารถดึงข้อมูลสรุปสถานะการสัมภาษณ์ได้',
+      error: error.message
+    });
+  }
+};
+```
+
+## การขยายระบบในอนาคต
+
+ระบบนี้สามารถขยายเพิ่มเติมได้ดังนี้:
+
+1. **เพิ่มระบบยืนยันตัวตน**: สำหรับการกำหนดสิทธิ์ผู้ใช้งานแต่ละระดับ
+2. **เพิ่มการวิเคราะห์ข้อมูล**: สร้างแดชบอร์ดแสดงผลการวิเคราะห์เชิงลึก
+3. **เพิ่มการแจ้งเตือน**: สำหรับนักศึกษาที่ยังไม่ได้รับการสัมภาษณ์
+4. **เพิ่มแอพมือถือ**: สำหรับการสัมภาษณ์แบบเคลื่อนที่
+5. **เพิ่มการเชื่อมต่อกับระบบอื่น**: เช่น ระบบทะเบียน หรือระบบให้คำปรึกษา
