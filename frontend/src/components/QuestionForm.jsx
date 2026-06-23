@@ -47,8 +47,8 @@ export default function QuestionForm() {
         
       case 'radio':
         try {
-          const options = question.answer_options ? 
-            question.answer_options.split(',').map(opt => opt.trim()) : 
+          const options = question.answer_options ?
+            question.answer_options.split('||').map(opt => opt.trim()) :
             [];
           
           return (
@@ -85,8 +85,8 @@ export default function QuestionForm() {
         
       case 'checkbox':
         try {
-          const options = question.answer_options ? 
-            question.answer_options.split(',').map(opt => opt.trim()) : 
+          const options = question.answer_options ?
+            question.answer_options.split('||').map(opt => opt.trim()) :
             [];
           
           // แปลงคำตอบเป็น array ถ้าเป็น string
@@ -138,8 +138,8 @@ export default function QuestionForm() {
         
       case 'select':
         try {
-          const options = question.answer_options ? 
-            question.answer_options.split(',').map(opt => opt.trim()) : 
+          const options = question.answer_options ?
+            question.answer_options.split('||').map(opt => opt.trim()) :
             [];
           
           return (
