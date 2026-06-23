@@ -81,7 +81,7 @@ export default function InterviewDetailPage() {
           <div><span className="text-gray-500">ชื่อ-นามสกุล:</span> <span className="font-medium">{data?.student_name}</span></div>
           <div><span className="text-gray-500">คณะ:</span> <span className="font-medium">{data?.faculty}</span></div>
           <div><span className="text-gray-500">หลักสูตร:</span> <span className="font-medium">{data?.program}</span></div>
-          <div><span className="text-gray-500">ผู้สัมภาษณ์:</span> <span className="font-medium">{data?.staff_name}</span></div>
+          <div><span className="text-gray-500">ผู้สัมภาษณ์:</span> <span className="font-medium">{data?.interviewer_name}</span></div>
           <div><span className="text-gray-500">วันที่สัมภาษณ์:</span> <span className="font-medium">{interviewDate}</span></div>
         </div>
       </div>

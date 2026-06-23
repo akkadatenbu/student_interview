@@ -53,7 +53,7 @@ export default function InterviewsPage() {
   const filtered = interviews.filter(i =>
     i.student_name?.includes(search) ||
     String(i.student_id).includes(search) ||
-    i.staff_name?.includes(search)
+    i.interviewer_name?.includes(search)
   );
 
   return (
@@ -104,7 +104,7 @@ export default function InterviewsPage() {
                     <td className="py-2 px-4 text-sm text-gray-900">{item.student_name}</td>
                     <td className="py-2 px-4 text-sm text-gray-900">{item.faculty}</td>
                     <td className="py-2 px-4 text-sm text-gray-900">{item.program}</td>
-                    <td className="py-2 px-4 text-sm text-gray-900">{item.staff_name}</td>
+                    <td className="py-2 px-4 text-sm text-gray-900">{item.interviewer_name}</td>
                     <td className="py-2 px-4 text-sm text-gray-500">
                       {item.interview_date
                         ? new Date(item.interview_date).toLocaleDateString('th-TH')
