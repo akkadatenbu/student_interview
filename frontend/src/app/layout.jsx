@@ -10,8 +10,6 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export default function RootLayout({ children }) {
-  const pathname = usePathname();
-  
   return (
     <html lang="th">
       <head>
