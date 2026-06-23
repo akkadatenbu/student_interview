@@ -11,3 +11,10 @@ body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
 }
+
+@media print {
+  .print\:hidden { display: none !important; }
+  header, footer, nav { display: none !important; }
+  body { background: white; }
+  .shadow-md, .shadow-sm { box-shadow: none !important; }
+}

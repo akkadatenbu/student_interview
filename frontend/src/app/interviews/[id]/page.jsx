@@ -64,13 +64,21 @@ export default function InterviewDetailPage() {
     ? new Date(data.interview_date).toLocaleString('th-TH')
     : '-';
 
+  const handlePrint = () => window.print();
+
   return (
     <div className="px-4 sm:px-0 max-w-3xl mx-auto">
-      {/* Back button */}
-      <div className="mb-4">
+      {/* Back button + Print */}
+      <div className="mb-4 flex justify-between items-center print:hidden">
         <Link href="/interviews" className="text-blue-600 hover:text-blue-800 text-sm">
           ← กลับรายการสัมภาษณ์
         </Link>
+        <button
+          onClick={handlePrint}
+          className="px-4 py-2 bg-gray-700 text-white text-sm rounded-md hover:bg-gray-800"
+        >
+          🖨️ พิมพ์ / บันทึก PDF
+        </button>
       </div>
 
       {/* ข้อมูลนักศึกษา */}

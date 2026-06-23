@@ -14,8 +14,8 @@ export default function InterviewPage() {
     <div className="px-4 sm:px-0">
       <h1 className="text-2xl font-bold text-gray-900 mb-4">สัมภาษณ์นักศึกษา</h1>
       
-      {/* ส่วนเลือกผู้สัมภาษณ์ */}
-      <InterviewerSelect />
+      {/* ส่วนเลือกผู้สัมภาษณ์ — แสดงเฉพาะเมื่อยังไม่ได้ login */}
+      {!interviewer && <InterviewerSelect />}
       
       {interviewer && (
         <div className="bg-white p-4 rounded-lg shadow-md mb-4">

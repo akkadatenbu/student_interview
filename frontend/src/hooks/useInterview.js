@@ -39,14 +39,17 @@ export const useInterview = () => {
       return false;
     }
 
-    // ตรวจสอบคำตอบ
-    const unansweredQuestions = visibleQuestions.filter(
+    // ตรวจสอบคำตอบ — ข้อที่มี "(ถ้ามี)" ในชื่อไม่บังคับตอบ
+    const requiredQuestions = visibleQuestions.filter(
+      (q) => !q.question_text?.includes('(ถ้ามี)')
+    );
+    const unansweredQuestions = requiredQuestions.filter(
       (q) => !answers[q.question_id]
     );
 
     if (unansweredQuestions.length > 0) {
       showNotification(
-        `กรุณาตอบคำถามทั้งหมด (ยังเหลืออีก ${unansweredQuestions.length} ข้อ)`,
+        `กรุณาตอบคำถามที่จำเป็น (ยังเหลืออีก ${unansweredQuestions.length} ข้อ)`,
         "warning"
       );
       return false;
