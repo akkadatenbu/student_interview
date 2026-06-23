@@ -33,6 +33,7 @@ export default function Header() {
             <nav className="ml-6 flex space-x-8">
               {navLink('/', 'หน้าแรก')}
               {navLink('/interview', 'สัมภาษณ์')}
+              {interviewer && navLink('/interviews', 'ผลสัมภาษณ์')}
               {interviewer && navLink('/reports', 'รายงาน')}
               {interviewer && isAdmin && navLink('/manage', 'จัดการข้อมูล')}
             </nav>
