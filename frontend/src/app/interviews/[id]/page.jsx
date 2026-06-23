@@ -103,14 +103,13 @@ export default function InterviewDetailPage() {
           <h2 className="text-sm font-bold text-gray-800 mb-2 pb-1 border-b">
             ผลการสัมภาษณ์
           </h2>
-          <div className="space-y-0">
+          <div>
             {data?.answers?.length > 0 ? data.answers.map((ans, index) => (
-              <div key={ans.answer_id} className="flex gap-1 text-xs py-0.5 leading-snug">
-                <span className="text-gray-500 shrink-0 w-5 text-right">{index + 1}.</span>
-                <span className="text-gray-600 shrink-0 min-w-0 flex-1">{ans.question_text}</span>
-                <span className="text-gray-900 font-medium shrink-0 max-w-[35%] text-right">
+              <div key={ans.answer_id} className="text-xs py-1 leading-snug">
+                <p className="text-gray-600">{index + 1}. {ans.question_text}</p>
+                <p className="text-gray-900 font-medium pl-4">
                   {ans.answer_text || <span className="text-gray-300 italic font-normal">-</span>}
-                </span>
+                </p>
               </div>
             )) : (
               <p className="text-center text-gray-400 text-xs py-2">ไม่พบข้อมูลคำตอบ</p>
