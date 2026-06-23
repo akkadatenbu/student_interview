@@ -4,18 +4,21 @@
 import { useState, useEffect } from 'react';
 import { studentService } from '@/services/studentService';
 
-export default function InterviewReport() {
+export default function InterviewReport({ faculty = null }) {
   const [summary, setSummary] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   useEffect(() => {
     const fetchSummary = async () => {
       try {
         setLoading(true);
         const response = await studentService.getInterviewStatusSummary();
         if (response.success) {
-          setSummary(response.data);
+          const data = faculty
+            ? response.data.filter(item => item.faculty === faculty)
+            : response.data;
+          setSummary(data);
         } else {
           setError('ไม่สามารถโหลดข้อมูลสรุปได้');
         }
@@ -25,9 +28,9 @@ export default function InterviewReport() {
         setLoading(false);
       }
     };
-    
+
     fetchSummary();
-  }, []);
+  }, [faculty]);
   
   if (loading) {
     return (

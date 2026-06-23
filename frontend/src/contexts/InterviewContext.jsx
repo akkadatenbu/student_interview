@@ -111,8 +111,22 @@ export const InterviewProvider = ({ children }) => {
     }));
   };
   
+  // ตรวจสอบว่าเป็นผู้บริหาร (เห็นรายงานทุกคณะ)
+  const isAdmin = interviewer
+    ? interviewer.staff_faculty?.includes('บริหาร') ||
+      interviewer.staff_faculty?.includes('สถาบัน') ||
+      interviewer.staff_faculty?.toLowerCase() === 'admin'
+    : false;
+
   // รีเซ็ตข้อมูลการสัมภาษณ์
   const resetInterview = () => {
+    setStudent(null);
+    setAnswers({});
+  };
+
+  // ออกจากระบบ
+  const logout = () => {
+    setInterviewer(null);
     setStudent(null);
     setAnswers({});
   };
@@ -136,6 +150,7 @@ export const InterviewProvider = ({ children }) => {
       value={{
         interviewer,
         setInterviewer,
+        isAdmin,
         student,
         setStudent,
         questions,
@@ -146,7 +161,8 @@ export const InterviewProvider = ({ children }) => {
         setLoading,
         notification,
         showNotification,
-        resetInterview
+        resetInterview,
+        logout
       }}
     >
       {children}
