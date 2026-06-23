@@ -19,11 +19,8 @@ export default function InterviewDetailPage() {
       try {
         setLoading(true);
         const response = await interviewService.getInterviewById(id);
-        if (response.success) {
-          setData(response.data);
-        } else {
-          setError('ไม่พบข้อมูลการสัมภาษณ์');
-        }
+        if (response.success) setData(response.data);
+        else setError('ไม่พบข้อมูลการสัมภาษณ์');
       } catch (err) {
         setError(err.message || 'เกิดข้อผิดพลาด');
       } finally {
@@ -35,7 +32,7 @@ export default function InterviewDetailPage() {
 
   if (!interviewer) {
     return (
-      <div className="px-4 sm:px-0 flex flex-col items-center justify-center py-20">
+      <div className="flex flex-col items-center justify-center py-20">
         <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md w-full">
           <div className="text-5xl mb-4">🔒</div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">กรุณายืนยันตัวตนก่อน</h2>
@@ -47,76 +44,81 @@ export default function InterviewDetailPage() {
     );
   }
 
-  if (loading) {
-    return <div className="text-center py-20 text-gray-500">กำลังโหลดข้อมูล...</div>;
-  }
+  if (loading) return <div className="text-center py-20 text-gray-500">กำลังโหลดข้อมูล...</div>;
 
-  if (error) {
-    return (
-      <div className="text-center py-20">
-        <p className="text-red-500 mb-4">{error}</p>
-        <Link href="/interviews" className="text-blue-600 hover:underline">กลับรายการ</Link>
-      </div>
-    );
-  }
+  if (error) return (
+    <div className="text-center py-20">
+      <p className="text-red-500 mb-4">{error}</p>
+      <Link href="/interviews" className="text-blue-600 hover:underline">กลับรายการ</Link>
+    </div>
+  );
 
   const interviewDate = data?.interview_date
-    ? new Date(data.interview_date).toLocaleString('th-TH')
+    ? new Date(data.interview_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })
     : '-';
 
-  const handlePrint = () => window.print();
-
   return (
-    <div className="px-4 sm:px-0 max-w-3xl mx-auto">
-      {/* Back button + Print */}
-      <div className="mb-4 flex justify-between items-center print:hidden">
-        <Link href="/interviews" className="text-blue-600 hover:text-blue-800 text-sm">
-          ← กลับรายการสัมภาษณ์
-        </Link>
-        <button
-          onClick={handlePrint}
-          className="px-4 py-2 bg-gray-700 text-white text-sm rounded-md hover:bg-gray-800"
-        >
-          🖨️ พิมพ์ / บันทึก PDF
-        </button>
-      </div>
+    <>
+      {/* Print styles */}
+      <style>{`
+        @media print {
+          @page { size: A4; margin: 1.2cm; }
+          body { font-size: 10pt; }
+          .no-print { display: none !important; }
+          .print-container { max-width: 100% !important; padding: 0 !important; }
+          .print-box { box-shadow: none !important; border: 1px solid #ddd; margin-bottom: 6pt; padding: 8pt !important; }
+        }
+      `}</style>
 
-      {/* ข้อมูลนักศึกษา */}
-      <div className="bg-white p-5 rounded-lg shadow-md mb-4">
-        <h2 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">ข้อมูลนักศึกษา</h2>
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div><span className="text-gray-500">รหัสนักศึกษา:</span> <span className="font-medium">{data?.student_id}</span></div>
-          <div><span className="text-gray-500">ชื่อ-นามสกุล:</span> <span className="font-medium">{data?.student_name}</span></div>
-          <div><span className="text-gray-500">คณะ:</span> <span className="font-medium">{data?.faculty}</span></div>
-          <div><span className="text-gray-500">หลักสูตร:</span> <span className="font-medium">{data?.program}</span></div>
-          <div><span className="text-gray-500">ผู้สัมภาษณ์:</span> <span className="font-medium">{data?.interviewer_name}</span></div>
-          <div><span className="text-gray-500">วันที่สัมภาษณ์:</span> <span className="font-medium">{interviewDate}</span></div>
+      <div className="px-4 sm:px-0 max-w-3xl mx-auto print-container">
+
+        {/* ปุ่ม — ซ่อนตอนพิมพ์ */}
+        <div className="mb-3 flex justify-between items-center no-print">
+          <Link href="/interviews" className="text-blue-600 hover:text-blue-800 text-sm">
+            ← กลับรายการ
+          </Link>
+          <button
+            onClick={() => window.print()}
+            className="px-4 py-1.5 bg-gray-700 text-white text-sm rounded-md hover:bg-gray-800"
+          >
+            🖨️ พิมพ์ / บันทึก PDF
+          </button>
         </div>
-      </div>
 
-      {/* คำถาม-คำตอบ */}
-      <div className="bg-white p-5 rounded-lg shadow-md">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
-          ผลการสัมภาษณ์
-          <span className="ml-2 text-sm font-normal text-gray-500">({data?.answers?.length || 0} ข้อ)</span>
-        </h2>
-        <div className="space-y-4">
-          {data?.answers?.length > 0 ? (
-            data.answers.map((ans, index) => (
-              <div key={ans.answer_id} className="border-b pb-3 last:border-b-0">
-                <p className="text-sm font-medium text-gray-700 mb-1">
-                  {index + 1}. {ans.question_text}
-                </p>
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded">
-                  {ans.answer_text || <span className="text-gray-400 italic">ไม่ได้ตอบ</span>}
-                </p>
+        {/* ข้อมูลนักศึกษา */}
+        <div className="bg-white rounded-lg shadow-md mb-3 p-4 print-box">
+          <h2 className="text-sm font-bold text-gray-800 mb-2 pb-1 border-b">ข้อมูลนักศึกษา</h2>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-0.5 text-xs">
+            <div className="flex gap-1"><span className="text-gray-500 shrink-0">รหัสนักศึกษา:</span><span className="font-medium">{data?.student_id}</span></div>
+            <div className="flex gap-1"><span className="text-gray-500 shrink-0">ชื่อ-นามสกุล:</span><span className="font-medium">{data?.student_name}</span></div>
+            <div className="flex gap-1"><span className="text-gray-500 shrink-0">คณะ:</span><span className="font-medium">{data?.faculty}</span></div>
+            <div className="flex gap-1"><span className="text-gray-500 shrink-0">หลักสูตร:</span><span className="font-medium">{data?.program}</span></div>
+            <div className="flex gap-1"><span className="text-gray-500 shrink-0">ผู้สัมภาษณ์:</span><span className="font-medium">{data?.interviewer_name}</span></div>
+            <div className="flex gap-1"><span className="text-gray-500 shrink-0">วันที่สัมภาษณ์:</span><span className="font-medium">{interviewDate}</span></div>
+          </div>
+        </div>
+
+        {/* คำถาม-คำตอบ */}
+        <div className="bg-white rounded-lg shadow-md p-4 print-box">
+          <h2 className="text-sm font-bold text-gray-800 mb-2 pb-1 border-b">
+            ผลการสัมภาษณ์
+          </h2>
+          <div className="space-y-0">
+            {data?.answers?.length > 0 ? data.answers.map((ans, index) => (
+              <div key={ans.answer_id} className="flex gap-1 text-xs py-0.5 leading-snug">
+                <span className="text-gray-500 shrink-0 w-5 text-right">{index + 1}.</span>
+                <span className="text-gray-600 shrink-0 min-w-0 flex-1">{ans.question_text}</span>
+                <span className="text-gray-900 font-medium shrink-0 max-w-[35%] text-right">
+                  {ans.answer_text || <span className="text-gray-300 italic font-normal">-</span>}
+                </span>
               </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-400 py-4">ไม่พบข้อมูลคำตอบ</p>
-          )}
+            )) : (
+              <p className="text-center text-gray-400 text-xs py-2">ไม่พบข้อมูลคำตอบ</p>
+            )}
+          </div>
         </div>
+
       </div>
-    </div>
+    </>
   );
 }
