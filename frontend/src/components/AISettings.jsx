@@ -96,16 +96,28 @@ export default function AISettings() {
         </p>
       </div>
 
-      {/* Model selector */}
+      {/* Model selector — auto-save */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">โมเดล AI</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          โมเดล AI
+          <span className="ml-2 text-xs text-gray-400 font-normal">(เปลี่ยนแล้วบันทึกอัตโนมัติ)</span>
+        </label>
         <select
           value={model}
-          onChange={e => setModel(e.target.value)}
+          onChange={async e => {
+            const newModel = e.target.value;
+            setModel(newModel);
+            try {
+              await api.post('config', { groq_model: newModel });
+              setSaved(true);
+              setTimeout(() => setSaved(false), 2000);
+            } catch {}
+          }}
           className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
         >
           {MODELS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
         </select>
+        {saved && <p className="text-xs text-green-600 mt-1">✓ บันทึกแล้ว</p>}
       </div>
 
       {/* Buttons */}
