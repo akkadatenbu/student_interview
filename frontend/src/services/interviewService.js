@@ -6,8 +6,9 @@ export const interviewService = {
    * ดึงข้อมูลการสัมภาษณ์ทั้งหมด
    * @returns {Promise} - ข้อมูลการสัมภาษณ์
    */
-  async getAllInterviews() {
-    return api.get("interviews");
+  async getAllInterviews(academicYear = null) {
+    const query = academicYear ? `?academic_year=${academicYear}` : '';
+    return api.get(`interviews${query}`);
   },
 
   /**

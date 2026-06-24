@@ -7,26 +7,28 @@ const fs = require('fs');
 // Get all interviews
 const getAllInterviews = async (req, res) => {
   try {
+    const { academic_year } = req.query;
+    const params = academic_year ? [parseInt(academic_year)] : [];
+    const yearFilter = academic_year ? 'AND s.academic_year = $1' : '';
+
     const result = await db.query(`
-      SELECT 
-        i.interview_id, 
-        i.student_id, 
-        s.student_name, 
-        s.program, 
+      SELECT
+        i.interview_id,
+        i.student_id,
+        s.student_name,
+        s.program,
         s.faculty,
-        i.interviewer_id, 
+        s.academic_year,
+        i.interviewer_id,
         staff.staff_name AS interviewer_name,
-        i.interview_date, 
+        i.interview_date,
         i.completed
-      FROM 
-        interview i
-      JOIN 
-        student s ON i.student_id = s.student_id
-      JOIN 
-        interviewer staff ON i.interviewer_id = staff.staff_id
-      ORDER BY 
-        i.interview_date DESC
-    `);
+      FROM interview i
+      JOIN student s ON i.student_id = s.student_id
+      JOIN interviewer staff ON i.interviewer_id = staff.staff_id
+      WHERE 1=1 ${yearFilter}
+      ORDER BY i.interview_date DESC
+    `, params);
     
     res.status(200).json({
       success: true,

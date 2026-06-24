@@ -14,7 +14,7 @@ export default function PendingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [academicYears, setAcademicYears] = useState([]);
-  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(undefined); // undefined = รอโหลดปี
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
@@ -25,13 +25,15 @@ export default function PendingPage() {
     studentService.getAcademicYears().then(res => {
       if (res.success && res.data.length > 0) {
         setAcademicYears(res.data);
-        setSelectedYear(res.data[0]);
+        setSelectedYear(res.data[0]); // ปีล่าสุด
+      } else {
+        setSelectedYear(null); // ไม่มีปี = แสดงทั้งหมด
       }
-    }).catch(() => {});
+    }).catch(() => { setSelectedYear(null); });
   }, [interviewer]);
 
   useEffect(() => {
-    if (!interviewer) return;
+    if (!interviewer || selectedYear === undefined) return; // รอให้ปีโหลดก่อน
     const fetch = async () => {
       try {
         setLoading(true);
@@ -95,7 +97,7 @@ export default function PendingPage() {
             <label className="text-sm text-gray-600 whitespace-nowrap">ปีการศึกษา:</label>
             <select
               value={selectedYear || ''}
-              onChange={e => setSelectedYear(e.target.value ? parseInt(e.target.value) : null)}
+              onChange={e => setSelectedYear(e.target.value !== '' ? parseInt(e.target.value) : null)}
               className="px-3 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">ทั้งหมด</option>

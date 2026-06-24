@@ -10,7 +10,7 @@ import { Lock } from 'lucide-react';
 export default function ReportsPage() {
   const { interviewer, isAdmin } = useInterview();
   const [academicYears, setAcademicYears] = useState([]);
-  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(undefined);
 
   const facultyFilter = isAdmin ? null : interviewer?.staff_faculty;
 
@@ -20,8 +20,10 @@ export default function ReportsPage() {
       if (res.success && res.data.length > 0) {
         setAcademicYears(res.data);
         setSelectedYear(res.data[0]);
+      } else {
+        setSelectedYear(null);
       }
-    }).catch(() => {});
+    }).catch(() => { setSelectedYear(null); });
   }, [interviewer]);
 
   // ยังไม่ได้ login
@@ -73,8 +75,10 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* รายงานสรุป */}
-      <InterviewReport faculty={facultyFilter} academicYear={selectedYear} />
+      {/* รายงานสรุป — รอให้ปีโหลดก่อน */}
+      {selectedYear !== undefined && (
+        <InterviewReport faculty={facultyFilter} academicYear={selectedYear} />
+      )}
     </div>
   );
 }

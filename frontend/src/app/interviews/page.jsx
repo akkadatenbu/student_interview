@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useInterview } from '@/hooks/useInterview';
 import { interviewService } from '@/services/interviewService';
+import { studentService } from '@/services/studentService';
 import { Lock } from 'lucide-react';
 
 export default function InterviewsPage() {
@@ -12,13 +13,29 @@ export default function InterviewsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
+  const [academicYears, setAcademicYears] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(undefined);
 
+  // โหลดปีการศึกษา
   useEffect(() => {
     if (!interviewer) return;
+    studentService.getAcademicYears().then(res => {
+      if (res.success && res.data.length > 0) {
+        setAcademicYears(res.data);
+        setSelectedYear(res.data[0]);
+      } else {
+        setSelectedYear(null);
+      }
+    }).catch(() => { setSelectedYear(null); });
+  }, [interviewer]);
+
+  // โหลดรายการสัมภาษณ์
+  useEffect(() => {
+    if (!interviewer || selectedYear === undefined) return;
     const fetchInterviews = async () => {
       try {
         setLoading(true);
-        const response = await interviewService.getAllInterviews();
+        const response = await interviewService.getAllInterviews(selectedYear);
         if (response.success) {
           const data = isAdmin
             ? response.data
@@ -34,7 +51,7 @@ export default function InterviewsPage() {
       }
     };
     fetchInterviews();
-  }, [interviewer, isAdmin]);
+  }, [interviewer, isAdmin, selectedYear]);
 
   if (!interviewer) {
     return (
@@ -65,7 +82,22 @@ export default function InterviewsPage() {
           {!isAdmin && <p className="text-sm text-gray-500 mt-1">คณะ: {interviewer.staff_faculty}</p>}
           {isAdmin && <p className="text-sm text-blue-600 mt-1">ผู้บริหาร — แสดงข้อมูลทุกคณะ</p>}
         </div>
-        <span className="text-sm text-gray-500">ทั้งหมด {interviews.length} คน</span>
+        <div className="flex items-center gap-3">
+          {academicYears.length > 0 && (
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600 whitespace-nowrap">ปีการศึกษา:</label>
+              <select
+                value={selectedYear ?? ''}
+                onChange={e => setSelectedYear(e.target.value !== '' ? parseInt(e.target.value) : null)}
+                className="px-3 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">ทั้งหมด</option>
+                {academicYears.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+          )}
+          <span className="text-sm text-gray-500">ทั้งหมด {interviews.length} คน</span>
+        </div>
       </div>
 
       {/* ค้นหา */}
