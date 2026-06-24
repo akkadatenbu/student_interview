@@ -169,11 +169,17 @@ const analyzeInterview = async (req, res) => {
 
     const answers = answersResult.rows;
 
-    // สร้าง prompt
+    // คำนวณ rule-based risk (เหมือนกับที่แสดงใน dashboard)
+    const answerMap = {};
+    answers.forEach(a => { answerMap[a.question_id] = a.answer_text || ''; });
+    const { riskLevel: ruleRiskLevel, flags: ruleFlags } = assessRisk(answerMap);
+
     const qaText = answers
       .filter(a => a.answer_text && a.answer_text.trim())
       .map(a => `${a.question_id}. ${a.question_text}: ${a.answer_text}`)
       .join('\n');
+
+    const flagsText = ruleFlags.length > 0 ? ruleFlags.join(', ') : 'ไม่พบปัจจัยเสี่ยง';
 
     const prompt = `คุณเป็นที่ปรึกษาด้านการศึกษา กรุณาวิเคราะห์ข้อมูลการสัมภาษณ์นักศึกษาต่อไปนี้
 
@@ -183,16 +189,22 @@ const analyzeInterview = async (req, res) => {
 - หลักสูตร: ${interview.program}
 - ระดับ: ${interview.level}
 
-ผลการสัมภาษณ์:
+ผลการประเมินเบื้องต้น (rule-based):
+- ระดับความเสี่ยง: ${ruleRiskLevel}
+- ปัจจัยที่ตรวจพบ: ${flagsText}
+
+ผลการสัมภาษณ์ทั้งหมด:
 ${qaText}
 
-กรุณาวิเคราะห์และตอบในรูปแบบ JSON เท่านั้น (ไม่ต้องมีข้อความอื่น):
+หมายเหตุ: กรุณาใช้ผลการประเมินเบื้องต้นด้านบนเป็นฐาน และให้ risk_level ในคำตอบของคุณสอดคล้องกับ "${ruleRiskLevel}" ยกเว้นมีเหตุผลพิเศษจากคำตอบที่ควรปรับระดับ
+
+กรุณาตอบในรูปแบบ JSON เท่านั้น (ไม่ต้องมีข้อความอื่น):
 {
-  "risk_level": "สูง หรือ ปานกลาง หรือ ต่ำ",
-  "risk_factors": ["ปัจจัยเสี่ยงที่พบ (ถ้ามี)"],
+  "risk_level": "${ruleRiskLevel}",
+  "risk_factors": ["ปัจจัยเสี่ยงที่พบ"],
   "strengths": ["จุดเด่นหรือข้อดีของนักศึกษา"],
   "recommendations": ["คำแนะนำสำหรับอาจารย์ที่ดูแล"],
-  "summary": "สรุปภาพรวมนักศึกษาคนนี้เป็นย่อหน้าสั้นๆ เพื่อให้อาจารย์ตัดสินใจว่าต้องดูแลเป็นพิเศษหรือไม่"
+  "summary": "สรุปภาพรวมนักศึกษาคนนี้เป็นย่อหน้าสั้นๆ"
 }`;
 
     const model = config.groq_model || 'llama-3.1-8b-instant';
