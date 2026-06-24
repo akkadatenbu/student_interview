@@ -80,6 +80,14 @@ const getCohortStats = async (req, res) => {
         interview_id: row.interview_id,
         risk_level:   riskLevel,
         flags,
+        key_answers: {
+          interest:  answerMap[RISK_QUESTIONS.INTEREST]   || null,
+          alcohol:   answerMap[RISK_QUESTIONS.ALCOHOL]    || null,
+          smoking:   answerMap[RISK_QUESTIONS.SMOKING]    || null,
+          drugs:     answerMap[RISK_QUESTIONS.DRUGS]      || null,
+          health:    answerMap[RISK_QUESTIONS.HEALTH]     || null,
+          expense:   answerMap[RISK_QUESTIONS.EXPENSE]    || null,
+        },
       });
 
       // category stats

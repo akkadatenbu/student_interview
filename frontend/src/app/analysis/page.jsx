@@ -10,14 +10,12 @@ import { api } from '@/services/api';
 import { studentService } from '@/services/studentService';
 import { useInterview } from '@/hooks/useInterview';
 import {
-  Lock, Bot, AlertTriangle, Info, CheckCircle,
-  Users, ShieldAlert, ShieldCheck, Activity, Loader
+  Lock, Bot, Users, ShieldAlert, ShieldCheck, Activity, Loader, X
 } from 'lucide-react';
 
-const RISK_COLOR = { 'สูง': '#ef4444', 'ปานกลาง': '#f59e0b', 'ต่ำ': '#22c55e' };
 const PIE_COLORS = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#06b6d4'];
 
-/* ── small helpers ── */
+/* ── helpers ── */
 const StatCard = ({ icon: Icon, label, value, color, sub }) => (
   <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
     <div className={`p-2.5 rounded-full ${color}`}><Icon size={20} className="text-white" /></div>
@@ -33,29 +31,90 @@ const objToPieData = (obj) =>
   Object.entries(obj).map(([name, value]) => ({ name, value })).filter(d => d.value > 0);
 
 const RiskBadge = ({ level }) => {
-  const cfg = {
-    'สูง':      'bg-red-100 text-red-700',
-    'ปานกลาง': 'bg-yellow-100 text-yellow-700',
-    'ต่ำ':      'bg-green-100 text-green-700',
-  };
+  const cfg = { 'สูง': 'bg-red-100 text-red-700', 'ปานกลาง': 'bg-yellow-100 text-yellow-700', 'ต่ำ': 'bg-green-100 text-green-700' };
   return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${cfg[level] || ''}`}>{level}</span>;
 };
 
-/* ── Section 3: Category chart card ── */
-const CategoryCard = ({ title, data, colors }) => (
-  <div className="bg-white rounded-xl shadow-sm p-4">
-    <h3 className="text-sm font-semibold text-gray-700 mb-3">{title}</h3>
-    <ResponsiveContainer width="100%" height={160}>
-      <PieChart>
-        <Pie data={data} cx="50%" cy="50%" outerRadius={60} dataKey="value" label={({ name, percent }) => percent > 0.05 ? `${(percent*100).toFixed(0)}%` : ''} labelLine={false}>
-          {data.map((_, i) => <Cell key={i} fill={colors[i % colors.length]} />)}
-        </Pie>
-        <Tooltip formatter={v => v.toLocaleString()} />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
-      </PieChart>
-    </ResponsiveContainer>
+/* ── Modal รายชื่อ ── */
+const StudentModal = ({ title, students, onClose }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+    <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+      <div className="flex items-center justify-between p-4 border-b">
+        <h3 className="font-semibold text-gray-800">{title} <span className="text-gray-400 font-normal text-sm">({students.length} คน)</span></h3>
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+      </div>
+      <div className="overflow-y-auto flex-1">
+        {students.length === 0
+          ? <p className="text-center py-8 text-gray-400">ไม่มีนักศึกษาในกลุ่มนี้</p>
+          : <table className="w-full text-sm">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="py-2 px-3 text-left text-xs text-gray-500 font-medium">ชื่อนักศึกษา</th>
+                  <th className="py-2 px-3 text-left text-xs text-gray-500 font-medium">คณะ</th>
+                  <th className="py-2 px-3 text-center text-xs text-gray-500 font-medium">ความเสี่ยง</th>
+                  <th className="py-2 px-3 text-center text-xs text-gray-500 font-medium">รายละเอียด</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {students.map(s => (
+                  <tr key={s.student_id} className="hover:bg-gray-50">
+                    <td className="py-2 px-3">
+                      <p className="font-medium text-gray-900">{s.student_name}</p>
+                      <p className="text-xs text-gray-400">{s.student_id}</p>
+                    </td>
+                    <td className="py-2 px-3 text-xs text-gray-600">{s.faculty}</td>
+                    <td className="py-2 px-3 text-center"><RiskBadge level={s.risk_level} /></td>
+                    <td className="py-2 px-3 text-center">
+                      <Link href={`/interviews/${s.interview_id}`} onClick={onClose}
+                        className="text-blue-600 hover:text-blue-800 text-xs font-medium">ดู</Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+        }
+      </div>
+    </div>
   </div>
 );
+
+/* ── Interactive Category Card ── */
+const CategoryCard = ({ title, data, colors, categoryKey, students, onSliceClick }) => {
+  const handleClick = (entry) => {
+    if (!entry || !entry.name) return;
+    const filtered = students.filter(s => s.key_answers?.[categoryKey] === entry.name);
+    onSliceClick(`${title} — ${entry.name}`, filtered);
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow">
+      <h3 className="text-sm font-semibold text-gray-700 mb-1">{title}</h3>
+      <p className="text-xs text-gray-400 mb-2">คลิกที่กราฟเพื่อดูรายชื่อ</p>
+      <ResponsiveContainer width="100%" height={160}>
+        <PieChart>
+          <Pie
+            data={data} cx="50%" cy="50%" outerRadius={60} dataKey="value"
+            label={({ percent }) => percent > 0.05 ? `${(percent*100).toFixed(0)}%` : ''}
+            labelLine={false}
+            onClick={handleClick}
+            style={{ cursor: 'pointer' }}
+          >
+            {data.map((_, i) => (
+              <Cell key={i} fill={colors[i % colors.length]}
+                style={{ opacity: 0.85, transition: 'opacity 0.2s' }}
+                onMouseEnter={e => e.target.style.opacity = 1}
+                onMouseLeave={e => e.target.style.opacity = 0.85}
+              />
+            ))}
+          </Pie>
+          <Tooltip formatter={(v, name) => [`${v} คน`, name]} />
+          <Legend wrapperStyle={{ fontSize: 11 }} />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
 
 /* ══ MAIN PAGE ══ */
 export default function AnalysisPage() {
@@ -69,6 +128,7 @@ export default function AnalysisPage() {
   const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
+  const [modal, setModal] = useState(null); // { title, students }
 
   const facultyFilter = isAdmin ? selectedFaculty : interviewer?.staff_faculty;
 
@@ -216,18 +276,33 @@ export default function AnalysisPage() {
             </div>
           )}
 
-          {/* ── Section 3: Category stats ── */}
+          {/* ── Section 3: Category stats (interactive) ── */}
           <div>
             <h2 className="text-base font-semibold text-gray-800 mb-3">วิเคราะห์ตามหมวดหมู่</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              <CategoryCard title="แอลกอฮอล์" data={objToPieData(stats.category_stats.alcohol)}  colors={['#22c55e','#86efac','#f59e0b','#ef4444']} />
-              <CategoryCard title="บุหรี่"    data={objToPieData(stats.category_stats.smoking)}  colors={['#22c55e','#f59e0b','#ef4444']} />
-              <CategoryCard title="สารเสพติด" data={objToPieData(stats.category_stats.drugs)}    colors={['#22c55e','#ef4444']} />
-              <CategoryCard title="สุขภาพ"    data={objToPieData(stats.category_stats.health)}   colors={['#22c55e','#f59e0b']} />
-              <CategoryCard title="ค่าใช้จ่าย" data={objToPieData(stats.category_stats.expense)} colors={PIE_COLORS} />
-              <CategoryCard title="ความสนใจ"  data={objToPieData(stats.category_stats.interest)} colors={['#3b82f6','#ef4444']} />
+              {[
+                { title: 'แอลกอฮอล์',  key: 'alcohol',  data: objToPieData(stats.category_stats.alcohol),  colors: ['#22c55e','#86efac','#f59e0b','#ef4444'] },
+                { title: 'บุหรี่',     key: 'smoking',  data: objToPieData(stats.category_stats.smoking),  colors: ['#22c55e','#f59e0b','#ef4444'] },
+                { title: 'สารเสพติด', key: 'drugs',    data: objToPieData(stats.category_stats.drugs),    colors: ['#22c55e','#ef4444'] },
+                { title: 'สุขภาพ',    key: 'health',   data: objToPieData(stats.category_stats.health),   colors: ['#22c55e','#f59e0b'] },
+                { title: 'ค่าใช้จ่าย',key: 'expense',  data: objToPieData(stats.category_stats.expense),  colors: PIE_COLORS },
+                { title: 'ความสนใจ',  key: 'interest', data: objToPieData(stats.category_stats.interest), colors: ['#3b82f6','#ef4444'] },
+              ].map(cat => (
+                <CategoryCard
+                  key={cat.key}
+                  title={cat.title}
+                  data={cat.data}
+                  colors={cat.colors}
+                  categoryKey={cat.key}
+                  students={stats.student_risks}
+                  onSliceClick={(title, students) => setModal({ title, students })}
+                />
+              ))}
             </div>
           </div>
+
+          {/* Modal */}
+          {modal && <StudentModal title={modal.title} students={modal.students} onClose={() => setModal(null)} />}
 
           {/* ── Section 1: Risk table ── */}
           <div className="bg-white rounded-xl shadow-sm">
