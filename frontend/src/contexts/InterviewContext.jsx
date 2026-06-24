@@ -9,15 +9,16 @@ export const InterviewContext = createContext();
 
 // Provider Component
 export const InterviewProvider = ({ children }) => {
-  // สถานะสำหรับผู้สัมภาษณ์ — โหลดจาก sessionStorage เมื่อ refresh
-  const [interviewer, setInterviewerState] = useState(() => {
+  // ต้องเริ่มด้วย null เสมอ (ให้ตรงกับ server render)
+  const [interviewer, setInterviewerState] = useState(null);
+
+  // โหลดจาก sessionStorage หลัง mount (client-side only)
+  useEffect(() => {
     try {
       const saved = sessionStorage.getItem('interviewer');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+      if (saved) setInterviewerState(JSON.parse(saved));
+    } catch {}
+  }, []);
 
   const setInterviewer = (data) => {
     setInterviewerState(data);
