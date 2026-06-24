@@ -42,7 +42,6 @@ const importStudents = async (req, res) => {
       return res.status(400).json({ success: false, message: 'กรุณาอัปโหลดไฟล์ CSV' });
     }
 
-    // mapping: { student_id: "รหัสนักศึกษา", student_name: "ชื่อนักศึกษา", ... }
     let mapping;
     try {
       mapping = JSON.parse(req.body.mapping);
@@ -50,13 +49,19 @@ const importStudents = async (req, res) => {
       return res.status(400).json({ success: false, message: 'ข้อมูล mapping ไม่ถูกต้อง' });
     }
 
-    const requiredFields = ['student_id', 'student_name', 'program', 'faculty', 'campus', 'level'];
-    const missingFields = requiredFields.filter(f => !mapping[f]);
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `กรุณา map field ที่จำเป็น: ${missingFields.join(', ')}`
-      });
+    const mode = req.body.mode || 'full'; // 'full' | 'status'
+
+    // validate required fields ตาม mode
+    if (mode === 'status') {
+      if (!mapping.student_id || !mapping.student_status) {
+        return res.status(400).json({ success: false, message: 'mode อัปเดตสถานะ ต้องมี student_id และ student_status' });
+      }
+    } else {
+      const requiredFields = ['student_id', 'student_name', 'program', 'faculty', 'campus', 'level'];
+      const missingFields = requiredFields.filter(f => !mapping[f]);
+      if (missingFields.length > 0) {
+        return res.status(400).json({ success: false, message: `กรุณา map field ที่จำเป็น: ${missingFields.join(', ')}` });
+      }
     }
 
     const rows = await parseCSV(req.file.buffer);
@@ -66,15 +71,37 @@ const importStudents = async (req, res) => {
 
     let inserted = 0;
     let updated = 0;
+    let skippedCount = 0;
     const errors = [];
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      const rowNum = i + 2; // +2 เพราะ header คือแถว 1
+      const rowNum = i + 2;
 
       try {
-        // Map ค่าจาก CSV column ตาม mapping
         const student_id = row[mapping.student_id]?.trim();
+        if (!student_id || isNaN(parseInt(student_id))) {
+          errors.push({ row: rowNum, reason: 'student_id ต้องเป็นตัวเลข' });
+          continue;
+        }
+
+        // ─── Mode A: อัปเดตสถานะอย่างเดียว ───
+        if (mode === 'status') {
+          const student_status = parseInt(row[mapping.student_status]?.trim());
+          if (isNaN(student_status)) {
+            errors.push({ row: rowNum, reason: 'student_status ต้องเป็นตัวเลข' });
+            continue;
+          }
+          const result = await db.query(
+            `UPDATE student SET student_status = $1 WHERE student_id = $2 RETURNING student_id`,
+            [student_status, parseInt(student_id)]
+          );
+          if (result.rows.length > 0) updated++;
+          else { skippedCount++; errors.push({ row: rowNum, reason: `ไม่พบ student_id ${student_id} ในระบบ` }); }
+          continue;
+        }
+
+        // ─── Mode B: Full upsert ───
         const student_name = row[mapping.student_name]?.trim();
         const program = row[mapping.program]?.trim();
         const faculty = row[mapping.faculty]?.trim();
@@ -85,25 +112,14 @@ const importStudents = async (req, res) => {
         const graduated_school = mapping.graduated_school ? row[mapping.graduated_school]?.trim() || null : null;
         const hometown = mapping.hometown ? row[mapping.hometown]?.trim() || null : null;
         const academic_year = mapping.academic_year ? parseInt(row[mapping.academic_year]?.trim()) || null : null;
+        const student_status = mapping.student_status ? parseInt(row[mapping.student_status]?.trim()) || 10 : 10;
 
-        // Validate required fields
-        if (!student_id || isNaN(parseInt(student_id))) {
-          errors.push({ row: rowNum, reason: 'student_id ต้องเป็นตัวเลข' });
-          continue;
-        }
-        if (!student_name) {
-          errors.push({ row: rowNum, reason: 'student_name ว่างเปล่า' });
-          continue;
-        }
-        if (!program || !faculty || !campus || !level) {
-          errors.push({ row: rowNum, reason: 'ข้อมูลจำเป็นไม่ครบ (program/faculty/campus/level)' });
-          continue;
-        }
+        if (!student_name) { errors.push({ row: rowNum, reason: 'student_name ว่างเปล่า' }); continue; }
+        if (!program || !faculty || !campus || !level) { errors.push({ row: rowNum, reason: 'ข้อมูลจำเป็นไม่ครบ (program/faculty/campus/level)' }); continue; }
 
-        // Upsert
         const result = await db.query(`
           INSERT INTO student (student_id, student_name, program, faculty, campus, level, phone, scholarship, graduated_school, hometown, academic_year, student_status)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 10)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
           ON CONFLICT (student_id) DO UPDATE SET
             student_name = EXCLUDED.student_name,
             program = EXCLUDED.program,
@@ -114,19 +130,19 @@ const importStudents = async (req, res) => {
             scholarship = EXCLUDED.scholarship,
             graduated_school = EXCLUDED.graduated_school,
             hometown = EXCLUDED.hometown,
-            academic_year = EXCLUDED.academic_year
+            academic_year = EXCLUDED.academic_year,
+            student_status = EXCLUDED.student_status
           RETURNING (xmax = 0) AS is_insert
-        `, [parseInt(student_id), student_name, program, faculty, campus, level, phone, scholarship, graduated_school, hometown, academic_year]);
+        `, [parseInt(student_id), student_name, program, faculty, campus, level, phone, scholarship, graduated_school, hometown, academic_year, student_status]);
 
-        if (result.rows[0].is_insert) {
-          inserted++;
-        } else {
-          updated++;
-        }
+        if (result.rows[0].is_insert) inserted++;
+        else updated++;
       } catch (err) {
         errors.push({ row: rowNum, reason: err.message });
       }
     }
+
+    const skipped = errors.length;
 
     return res.json({
       success: true,
