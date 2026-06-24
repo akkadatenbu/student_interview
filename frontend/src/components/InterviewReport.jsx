@@ -67,11 +67,11 @@ export default function InterviewReport({ faculty = null, academicYear = null, d
         <table className="w-full table-fixed bg-white text-sm">
           <colgroup>
             <col style={{ width: '22%' }} />
-            <col style={{ width: '40%' }} />
+            <col style={{ width: '50%' }} />
             <col style={{ width: '6%' }} />
             <col style={{ width: '6%' }} />
             <col style={{ width: '6%' }} />
-            <col style={{ width: '20%' }} />
+            <col style={{ width: '10%' }} />
           </colgroup>
           <thead className="bg-gray-50">
             <tr>
