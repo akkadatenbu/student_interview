@@ -31,10 +31,14 @@ export default function RootLayout({ children }) {
             </main>
             
             {/* Footer */}
-            <footer className="bg-white shadow-inner py-4 mt-8">
+            <footer className="bg-white shadow-inner py-5 mt-8 print:hidden">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center text-gray-500 text-sm">
-                  <p>&copy; {new Date().getFullYear()} ระบบสัมภาษณ์นักศึกษา</p>
+                <div className="text-center space-y-1">
+                  <p className="text-sm font-medium text-gray-700">ระบบสัมภาษณ์นักศึกษา</p>
+                  <p className="text-xs text-gray-500">
+                    พัฒนาโดย <span className="font-medium text-blue-600">สำนักเทคโนโลยีสารสนเทศ</span>
+                  </p>
+                  <p className="text-xs text-gray-400">&copy; {new Date().getFullYear()} มหาวิทยาลัยนอร์ทกรุงเทพ</p>
                 </div>
               </div>
             </footer>
