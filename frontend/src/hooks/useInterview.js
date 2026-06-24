@@ -99,12 +99,11 @@ export const useInterview = () => {
   /**
    * ดาวน์โหลดข้อมูลการสัมภาษณ์เป็น Excel
    */
-  const downloadExcelReport = async () => {
+  const downloadExcelReport = async (academicYear = null) => {
     try {
       setLoading(true);
 
-      // ดึงข้อมูล Excel
-      const blob = await interviewService.exportInterviewsToExcel();
+      const blob = await interviewService.exportInterviewsToExcel(academicYear);
 
       // สร้าง URL สำหรับดาวน์โหลด
       const url = window.URL.createObjectURL(blob);

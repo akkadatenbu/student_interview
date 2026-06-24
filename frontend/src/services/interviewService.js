@@ -51,7 +51,8 @@ export const interviewService = {
    * ส่งออกข้อมูลการสัมภาษณ์เป็น Excel
    * @returns {Promise} - Blob ไฟล์ Excel
    */
-  async exportInterviewsToExcel() {
-    return api.downloadFile("interviews/export");
+  async exportInterviewsToExcel(academicYear = null) {
+    const query = academicYear ? `?academic_year=${academicYear}` : '';
+    return api.downloadFile(`interviews/export${query}`);
   },
 };

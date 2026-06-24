@@ -474,13 +474,16 @@ const deleteInterview = async (req, res) => {
 // Export all interviews to Excel
 const exportInterviewsToExcel = async (req, res) => {
   try {
-    // Get all interviews with student and interviewer details
+    const { academic_year } = req.query;
+    const params = academic_year ? [parseInt(academic_year)] : [];
+    const yearFilter = academic_year ? 'AND s.academic_year = $1' : '';
+
     const interviews = await db.query(`
-      SELECT 
-        i.interview_id, 
-        i.student_id, 
-        s.student_name, 
-        s.program, 
+      SELECT
+        i.interview_id,
+        i.student_id,
+        s.student_name,
+        s.program,
         s.faculty,
         s.campus,
         s.level,
@@ -488,18 +491,16 @@ const exportInterviewsToExcel = async (req, res) => {
         s.scholarship,
         s.graduated_school,
         s.hometown,
-        i.interviewer_id, 
+        s.academic_year,
+        i.interviewer_id,
         staff.staff_name AS interviewer_name,
         i.interview_date
-      FROM 
-        interview i
-      JOIN 
-        student s ON i.student_id = s.student_id
-      JOIN 
-        interviewer staff ON i.interviewer_id = staff.staff_id
-      ORDER BY 
-        i.interview_date DESC
-    `);
+      FROM interview i
+      JOIN student s ON i.student_id = s.student_id
+      JOIN interviewer staff ON i.interviewer_id = staff.staff_id
+      WHERE 1=1 ${yearFilter}
+      ORDER BY i.interview_date DESC
+    `, params);
     
     // Get all questions
     const questions = await db.query('SELECT * FROM question ORDER BY question_id');
@@ -606,12 +607,41 @@ const exportInterviewsToExcel = async (req, res) => {
       fgColor: { argb: 'FFE0E0E0' }
     };
     
+    // Sheet 3: นักศึกษาที่ยังไม่ได้รับการสัมภาษณ์
+    const pendingResult = await db.query(`
+      SELECT s.student_id, s.student_name, s.program, s.faculty, s.campus, s.level,
+             s.phone, s.scholarship, s.graduated_school, s.hometown, s.academic_year
+      FROM student s
+      LEFT JOIN interview i ON s.student_id = i.student_id
+      WHERE i.student_id IS NULL ${yearFilter}
+      ORDER BY s.faculty, s.program, s.student_id
+    `, params);
+
+    const pendingSheet = workbook.addWorksheet('รอสัมภาษณ์');
+    pendingSheet.columns = [
+      { header: 'รหัสนักศึกษา', key: 'student_id', width: 15 },
+      { header: 'ชื่อนักศึกษา', key: 'student_name', width: 30 },
+      { header: 'หลักสูตร', key: 'program', width: 30 },
+      { header: 'คณะ', key: 'faculty', width: 20 },
+      { header: 'วิทยาเขต', key: 'campus', width: 15 },
+      { header: 'ระดับ', key: 'level', width: 10 },
+      { header: 'เบอร์โทร', key: 'phone', width: 15 },
+      { header: 'ทุนการศึกษา', key: 'scholarship', width: 20 },
+      { header: 'โรงเรียนเดิม', key: 'graduated_school', width: 25 },
+      { header: 'ภูมิลำเนา', key: 'hometown', width: 20 },
+      { header: 'ปีการศึกษา', key: 'academic_year', width: 12 },
+    ];
+    pendingSheet.addRows(pendingResult.rows);
+    pendingSheet.getRow(1).font = { bold: true };
+    pendingSheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF0C0' } };
+    pendingSheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: pendingSheet.columns.length } };
+
     // Set auto-filter on both sheets
     summarySheet.autoFilter = {
       from: { row: 1, column: 1 },
       to: { row: 1, column: summarySheet.columns.length }
     };
-    
+
     detailSheet.autoFilter = {
       from: { row: 1, column: 1 },
       to: { row: 1, column: 5 }
