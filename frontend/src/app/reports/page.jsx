@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { studentService } from '@/services/studentService';
 import { useInterview } from '@/hooks/useInterview';
 import InterviewReport from '@/components/InterviewReport';
