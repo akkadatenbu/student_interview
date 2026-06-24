@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { useInterview } from '@/hooks/useInterview';
 import { interviewService } from '@/services/interviewService';
 import { Lock, Printer, ChevronLeft } from 'lucide-react';
+import AIAnalysis from '@/components/AIAnalysis';
 
 export default function InterviewDetailPage() {
   const { id } = useParams();
@@ -98,6 +99,9 @@ export default function InterviewDetailPage() {
             <div className="flex gap-1"><span className="text-gray-500 shrink-0">วันที่สัมภาษณ์:</span><span className="font-medium">{interviewDate}</span></div>
           </div>
         </div>
+
+        {/* AI Analysis */}
+        <AIAnalysis interviewId={id} />
 
         {/* คำถาม-คำตอบ */}
         <div className="bg-white rounded-lg shadow-md p-4 print-box">

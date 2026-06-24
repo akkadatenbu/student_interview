@@ -9,6 +9,8 @@ const interviewerRoutes = require('./routes/interviewerRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const interviewRoutes = require('./routes/interviewRoutes');
+const configRoutes = require('./routes/configRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 
 // Run migrations on startup
 const addStudentStatus = require('./migrations/add_student_status');
@@ -33,6 +35,8 @@ app.use('/api/interviewers', interviewerRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/interviews', interviewRoutes);
+app.use('/api/config', configRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
