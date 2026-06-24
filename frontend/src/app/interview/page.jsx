@@ -1,6 +1,7 @@
 // frontend/src/app/interview/page.jsx
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useInterview } from '../../hooks/useInterview';
 import InterviewerSelect from '@/components/InterviewerSelect';
 import StudentSearch from '@/components/StudentSearch';
@@ -9,6 +10,8 @@ import QuestionForm from '@/components/QuestionForm';
 
 export default function InterviewPage() {
   const { interviewer, student } = useInterview();
+  const searchParams = useSearchParams();
+  const prefilledStudentId = searchParams.get('student_id');
   
   return (
     <div className="px-4 sm:px-0">
@@ -38,7 +41,7 @@ export default function InterviewPage() {
       )}
       
       {/* ส่วนค้นหานักศึกษา */}
-      {interviewer && <StudentSearch />}
+      {interviewer && <StudentSearch prefilledId={prefilledStudentId} />}
       
       {/* ส่วนแสดงข้อมูลนักศึกษา */}
       {student && <StudentInfo />}

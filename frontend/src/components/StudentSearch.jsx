@@ -1,25 +1,33 @@
 // frontend/src/components/StudentSearch.jsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useInterview } from '@/hooks/useInterview';
 import { studentService } from '@/services/studentService';
 
-export default function StudentSearch() {
+export default function StudentSearch({ prefilledId = null }) {
   const { setStudent, showNotification } = useInterview();
-  const [studentId, setStudentId] = useState('');
+  const [studentId, setStudentId] = useState(prefilledId || '');
   const [loading, setLoading] = useState(false);
-  
+
+  // auto-search เมื่อมี prefilledId จาก URL
+  useEffect(() => {
+    if (prefilledId) {
+      handleStudentSearch(prefilledId);
+    }
+  }, [prefilledId]);
+
   // ค้นหานักศึกษา
-  const handleStudentSearch = async () => {
-    if (!studentId) {
+  const handleStudentSearch = async (searchId) => {
+    const id = searchId || studentId;
+    if (!id) {
       showNotification('กรุณากรอกรหัสนักศึกษา', 'warning');
       return;
     }
-    
+
     try {
       setLoading(true);
-      const response = await studentService.getStudentById(studentId);
+      const response = await studentService.getStudentById(id);
       if (response.success) {
         if (response.data.interviewed) {
           showNotification('นักศึกษาคนนี้ได้รับการสัมภาษณ์แล้ว', 'warning');
@@ -52,6 +60,7 @@ export default function StudentSearch() {
             type="text"
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleStudentSearch()}
             placeholder="กรอกรหัสนักศึกษา"
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -59,7 +68,7 @@ export default function StudentSearch() {
         
         <div className="self-end">
           <button
-            onClick={handleStudentSearch}
+            onClick={() => handleStudentSearch()}
             disabled={loading}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400"
           >

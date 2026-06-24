@@ -157,7 +157,10 @@ export default function PendingPage() {
                       <td className="py-2 px-4 text-sm text-gray-600">{student.faculty}</td>
                       <td className="py-2 px-4 text-sm text-gray-600">{student.program}</td>
                       <td className="py-2 px-4 text-center">
-                        <Link href="/interview" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        <Link
+                          href={`/interview?student_id=${student.student_id}`}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        >
                           สัมภาษณ์
                         </Link>
                       </td>
