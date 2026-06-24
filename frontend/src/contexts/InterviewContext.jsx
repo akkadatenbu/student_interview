@@ -9,8 +9,24 @@ export const InterviewContext = createContext();
 
 // Provider Component
 export const InterviewProvider = ({ children }) => {
-  // สถานะสำหรับผู้สัมภาษณ์
-  const [interviewer, setInterviewer] = useState(null);
+  // สถานะสำหรับผู้สัมภาษณ์ — โหลดจาก sessionStorage เมื่อ refresh
+  const [interviewer, setInterviewerState] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('interviewer');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const setInterviewer = (data) => {
+    setInterviewerState(data);
+    if (data) {
+      sessionStorage.setItem('interviewer', JSON.stringify(data));
+    } else {
+      sessionStorage.removeItem('interviewer');
+    }
+  };
   
   // สถานะสำหรับนักศึกษา
   const [student, setStudent] = useState(null);
@@ -129,6 +145,7 @@ export const InterviewProvider = ({ children }) => {
     setInterviewer(null);
     setStudent(null);
     setAnswers({});
+    sessionStorage.removeItem('interviewer');
   };
   
   // แสดงข้อความแจ้งเตือน
