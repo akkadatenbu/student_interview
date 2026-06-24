@@ -36,6 +36,7 @@ export default function Header() {
               {navLink('/interview', 'สัมภาษณ์')}
               {interviewer && navLink('/interviews', 'ผลสัมภาษณ์')}
               {interviewer && navLink('/pending', 'รอสัมภาษณ์')}
+              {interviewer && navLink('/analysis', 'วิเคราะห์')}
               {interviewer && navLink('/reports', 'รายงาน')}
               {interviewer && isAdmin && navLink('/manage', 'จัดการข้อมูล')}
             </nav>
