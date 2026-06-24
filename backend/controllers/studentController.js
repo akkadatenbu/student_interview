@@ -6,14 +6,15 @@ const getAllStudents = async (req, res) => {
   try {
     // ดึงข้อมูลนักศึกษาพร้อมสถานะการสัมภาษณ์
     const result = await db.query(`
-      SELECT 
-        s.*, 
+      SELECT
+        s.*,
         CASE WHEN i.interview_id IS NOT NULL THEN true ELSE false END AS interviewed
-      FROM 
+      FROM
         student s
-      LEFT JOIN 
+      LEFT JOIN
         interview i ON s.student_id = i.student_id
-      ORDER BY 
+      WHERE s.student_status = 10
+      ORDER BY
         s.student_id
     `);
     
@@ -46,8 +47,8 @@ const getStudentById = async (req, res) => {
         student s
       LEFT JOIN 
         interview i ON s.student_id = i.student_id
-      WHERE 
-        s.student_id = $1
+      WHERE
+        s.student_id = $1 AND s.student_status = 10
     `, [id]);
     
     if (result.rows.length === 0) {
@@ -84,9 +85,9 @@ const getStudentsByFaculty = async (req, res) => {
         student s
       LEFT JOIN 
         interview i ON s.student_id = i.student_id
-      WHERE 
-        s.faculty = $1
-      ORDER BY 
+      WHERE
+        s.faculty = $1 AND s.student_status = 10
+      ORDER BY
         s.student_id
     `, [faculty]);
     
@@ -118,9 +119,9 @@ const getStudentsByProgram = async (req, res) => {
         student s
       LEFT JOIN 
         interview i ON s.student_id = i.student_id
-      WHERE 
-        s.program = $1
-      ORDER BY 
+      WHERE
+        s.program = $1 AND s.student_status = 10
+      ORDER BY
         s.student_id
     `, [program]);
     
@@ -151,7 +152,7 @@ const getNotInterviewedStudents = async (req, res) => {
       SELECT s.*
       FROM student s
       LEFT JOIN interview i ON s.student_id = i.student_id
-      WHERE i.student_id IS NULL ${yearFilter}
+      WHERE i.student_id IS NULL AND s.student_status = 10 ${yearFilter}
       ORDER BY s.faculty, s.program, s.student_id
     `, params);
 
@@ -322,7 +323,7 @@ const getAcademicYears = async (req, res) => {
     const result = await db.query(`
       SELECT DISTINCT academic_year
       FROM student
-      WHERE academic_year IS NOT NULL
+      WHERE academic_year IS NOT NULL AND student_status = 10
       ORDER BY academic_year DESC
     `);
     res.status(200).json({
@@ -356,7 +357,7 @@ const getInterviewStatusSummary = async (req, res) => {
           CASE WHEN i.interview_id IS NOT NULL THEN true ELSE false END AS interviewed
         FROM student s
         LEFT JOIN interview i ON s.student_id = i.student_id
-        ${yearFilter}
+        WHERE s.student_status = 10 ${yearFilter.replace('WHERE', 'AND')}
       ) AS subquery
       GROUP BY faculty, program
       ORDER BY faculty, program

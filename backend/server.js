@@ -10,6 +10,13 @@ const studentRoutes = require('./routes/studentRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const interviewRoutes = require('./routes/interviewRoutes');
 
+// Run migrations on startup
+const addAcademicYear = require('./migrations/add_academic_year');
+const addStudentStatus = require('./migrations/add_student_status');
+Promise.all([addAcademicYear(), addStudentStatus()])
+  .then(() => console.log('Migrations completed'))
+  .catch(err => console.error('Migration error:', err));
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 

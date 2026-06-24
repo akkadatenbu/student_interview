@@ -26,10 +26,10 @@ const getAllInterviews = async (req, res) => {
       FROM interview i
       JOIN student s ON i.student_id = s.student_id
       JOIN interviewer staff ON i.interviewer_id = staff.staff_id
-      WHERE 1=1 ${yearFilter}
+      WHERE s.student_status = 10 ${yearFilter}
       ORDER BY i.interview_date DESC
     `, params);
-    
+
     res.status(200).json({
       success: true,
       count: result.rows.length,
@@ -500,7 +500,7 @@ const exportInterviewsToExcel = async (req, res) => {
       FROM interview i
       JOIN student s ON i.student_id = s.student_id
       JOIN interviewer staff ON i.interviewer_id = staff.staff_id
-      WHERE 1=1 ${yearFilter}
+      WHERE s.student_status = 10 ${yearFilter}
       ORDER BY i.interview_date DESC
     `, params);
     
@@ -615,7 +615,7 @@ const exportInterviewsToExcel = async (req, res) => {
              s.phone, s.scholarship, s.graduated_school, s.hometown, s.academic_year
       FROM student s
       LEFT JOIN interview i ON s.student_id = i.student_id
-      WHERE i.student_id IS NULL ${yearFilter}
+      WHERE i.student_id IS NULL AND s.student_status = 10 ${yearFilter}
       ORDER BY s.faculty, s.program, s.student_id
     `, params);
 

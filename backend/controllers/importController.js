@@ -102,8 +102,8 @@ const importStudents = async (req, res) => {
 
         // Upsert
         const result = await db.query(`
-          INSERT INTO student (student_id, student_name, program, faculty, campus, level, phone, scholarship, graduated_school, hometown, academic_year)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          INSERT INTO student (student_id, student_name, program, faculty, campus, level, phone, scholarship, graduated_school, hometown, academic_year, student_status)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 10)
           ON CONFLICT (student_id) DO UPDATE SET
             student_name = EXCLUDED.student_name,
             program = EXCLUDED.program,
