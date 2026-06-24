@@ -63,7 +63,7 @@ ${qaText}
   "summary": "สรุปภาพรวมนักศึกษาคนนี้เป็นย่อหน้าสั้นๆ เพื่อให้อาจารย์ตัดสินใจว่าต้องดูแลเป็นพิเศษหรือไม่"
 }`;
 
-    const model = config.groq_model || 'llama3-8b-8192';
+    const model = config.groq_model || 'llama-3.1-8b-instant';
 
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',

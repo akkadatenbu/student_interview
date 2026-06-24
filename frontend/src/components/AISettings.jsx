@@ -5,10 +5,10 @@ import { api } from '@/services/api';
 import { Bot, Save, Eye, EyeOff, CheckCircle } from 'lucide-react';
 
 const MODELS = [
-  { id: 'llama3-8b-8192',          label: 'LLaMA 3 8B (เร็ว, ประหยัด)' },
-  { id: 'llama3-70b-8192',         label: 'LLaMA 3 70B (แม่นยำกว่า)' },
-  { id: 'mixtral-8x7b-32768',      label: 'Mixtral 8x7B (context ยาว)' },
-  { id: 'llama-3.1-8b-instant',    label: 'LLaMA 3.1 8B Instant (เร็วมาก)' },
+  { id: 'llama-3.1-8b-instant',       label: 'LLaMA 3.1 8B Instant (เร็ว, แนะนำ)' },
+  { id: 'llama-3.3-70b-versatile',    label: 'LLaMA 3.3 70B Versatile (แม่นยำกว่า)' },
+  { id: 'llama-3.1-70b-versatile',    label: 'LLaMA 3.1 70B Versatile' },
+  { id: 'gemma2-9b-it',               label: 'Gemma 2 9B' },
 ];
 
 export default function AISettings() {

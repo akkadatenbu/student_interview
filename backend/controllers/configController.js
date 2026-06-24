@@ -25,7 +25,7 @@ const getConfig = (req, res) => {
     success: true,
     data: {
       groq_api_key_set: !!config.groq_api_key,
-      groq_model: config.groq_model || 'llama3-8b-8192',
+      groq_model: config.groq_model || 'llama-3.1-8b-instant',
     }
   });
 };
