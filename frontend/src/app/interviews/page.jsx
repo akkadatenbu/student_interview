@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useInterview } from '@/hooks/useInterview';
 import { interviewService } from '@/services/interviewService';
+import { Lock } from 'lucide-react';
 
 export default function InterviewsPage() {
   const { interviewer, isAdmin } = useInterview();
@@ -39,7 +40,7 @@ export default function InterviewsPage() {
     return (
       <div className="px-4 sm:px-0 flex flex-col items-center justify-center py-20">
         <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md w-full">
-          <div className="text-5xl mb-4">🔒</div>
+          <Lock size={48} className="text-gray-400 mb-4 mx-auto" />
           <h2 className="text-xl font-semibold text-gray-800 mb-2">กรุณายืนยันตัวตนก่อน</h2>
           <p className="text-gray-500 mb-6">กรอกรหัสบุคลากรที่หน้าสัมภาษณ์ก่อนจึงจะดูข้อมูลได้</p>
           <Link href="/interview" className="inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">

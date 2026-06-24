@@ -1,13 +1,17 @@
 // frontend/src/app/layout.jsx
 'use client';
 
-import { Inter } from 'next/font/google';
+import { Prompt } from 'next/font/google';
 import { InterviewProvider } from '@/contexts/InterviewContext.jsx';
 import Header from '@/components/Header';
 import Notification from '@/components/Notification';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const prompt = Prompt({
+  subsets: ['thai', 'latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+});
 
 export default function RootLayout({ children }) {
   return (
@@ -16,7 +20,7 @@ export default function RootLayout({ children }) {
         <title>ระบบสัมภาษณ์นักศึกษา</title>
         <meta name="description" content="ระบบสัมภาษณ์นักศึกษาสำหรับเก็บข้อมูลในการดูแล" />
       </head>
-      <body className={inter.className}>
+      <body className={prompt.className}>
         <InterviewProvider>
           <div className="min-h-screen bg-gray-100">
             <Header />

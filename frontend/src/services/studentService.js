@@ -41,15 +41,17 @@ export const studentService = {
    * ดึงข้อมูลนักศึกษาที่ยังไม่ได้รับการสัมภาษณ์
    * @returns {Promise} - ข้อมูลนักศึกษา
    */
-  async getNotInterviewedStudents() {
-    return api.get("students/not-interviewed");
+  async getNotInterviewedStudents(academicYear = null) {
+    const query = academicYear ? `?academic_year=${academicYear}` : '';
+    return api.get(`students/not-interviewed${query}`);
   },
 
-  /**
-   * ดึงข้อมูลสรุปสถานะการสัมภาษณ์
-   * @returns {Promise} - ข้อมูลสรุป
-   */
-  async getInterviewStatusSummary() {
-    return api.get("students/summary");
+  async getAcademicYears() {
+    return api.get('students/academic-years');
+  },
+
+  async getInterviewStatusSummary(academicYear = null) {
+    const query = academicYear ? `?academic_year=${academicYear}` : '';
+    return api.get(`students/summary${query}`);
   },
 };

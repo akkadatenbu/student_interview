@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useInterview } from '@/hooks/useInterview';
+import { Crown, LogOut, UserCircle } from 'lucide-react';
 
 export default function Header() {
   const pathname = usePathname();
@@ -42,17 +43,24 @@ export default function Header() {
           {/* User Info + Logout */}
           <div className="flex items-center">
             {interviewer ? (
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{interviewer.staff_name}</p>
-                  <p className="text-xs text-gray-500">
-                    {isAdmin ? '👑 ผู้บริหาร' : interviewer.staff_faculty}
-                  </p>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  {isAdmin
+                    ? <Crown size={16} className="text-yellow-500" />
+                    : <UserCircle size={16} className="text-blue-500" />
+                  }
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900 leading-tight">{interviewer.staff_name}</p>
+                    <p className="text-xs text-gray-500 leading-tight">
+                      {isAdmin ? 'ผู้บริหาร' : interviewer.staff_faculty}
+                    </p>
+                  </div>
                 </div>
                 <button
                   onClick={logout}
-                  className="px-3 py-1.5 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-100 transition-colors"
                 >
+                  <LogOut size={14} />
                   ออกจากระบบ
                 </button>
               </div>

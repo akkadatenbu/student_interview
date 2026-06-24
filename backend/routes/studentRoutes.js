@@ -12,6 +12,7 @@ router.post("/import", upload.single("file"), importStudents);
 router.get("/", studentController.getAllStudents);
 router.get("/faculty/:faculty", studentController.getStudentsByFaculty);
 router.get("/program/:program", studentController.getStudentsByProgram);
+router.get("/academic-years", studentController.getAcademicYears);
 router.get("/not-interviewed", studentController.getNotInterviewedStudents);
 router.get("/summary", studentController.getInterviewStatusSummary);
 router.get("/:id", studentController.getStudentById);

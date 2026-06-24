@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useInterview } from '@/hooks/useInterview';
 import { interviewService } from '@/services/interviewService';
+import { Lock, Printer, ChevronLeft } from 'lucide-react';
 
 export default function InterviewDetailPage() {
   const { id } = useParams();
@@ -34,7 +35,7 @@ export default function InterviewDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md w-full">
-          <div className="text-5xl mb-4">🔒</div>
+          <Lock size={48} className="text-gray-400 mb-4 mx-auto" />
           <h2 className="text-xl font-semibold text-gray-800 mb-2">กรุณายืนยันตัวตนก่อน</h2>
           <Link href="/interview" className="inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
             ไปยืนยันรหัสบุคลากร
@@ -74,14 +75,14 @@ export default function InterviewDetailPage() {
 
         {/* ปุ่ม — ซ่อนตอนพิมพ์ */}
         <div className="mb-3 flex justify-between items-center no-print">
-          <Link href="/interviews" className="text-blue-600 hover:text-blue-800 text-sm">
-            ← กลับรายการ
+          <Link href="/interviews" className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
+            <ChevronLeft size={16} /> กลับรายการ
           </Link>
           <button
             onClick={() => window.print()}
-            className="px-4 py-1.5 bg-gray-700 text-white text-sm rounded-md hover:bg-gray-800"
+            className="flex items-center gap-2 px-4 py-1.5 bg-gray-700 text-white text-sm rounded-md hover:bg-gray-800"
           >
-            🖨️ พิมพ์ / บันทึก PDF
+            <Printer size={15} /> พิมพ์ / บันทึก PDF
           </button>
         </div>
 

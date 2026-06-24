@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { studentService } from '@/services/studentService';
 
-export default function InterviewReport({ faculty = null }) {
+export default function InterviewReport({ faculty = null, academicYear = null }) {
   const [summary, setSummary] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,7 +13,7 @@ export default function InterviewReport({ faculty = null }) {
     const fetchSummary = async () => {
       try {
         setLoading(true);
-        const response = await studentService.getInterviewStatusSummary();
+        const response = await studentService.getInterviewStatusSummary(academicYear);
         if (response.success) {
           const data = faculty
             ? response.data.filter(item => item.faculty === faculty)
@@ -30,7 +30,7 @@ export default function InterviewReport({ faculty = null }) {
     };
 
     fetchSummary();
-  }, [faculty]);
+  }, [faculty, academicYear]);
   
   if (loading) {
     return (

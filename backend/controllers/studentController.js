@@ -142,31 +142,23 @@ const getStudentsByProgram = async (req, res) => {
 // Get students who have not been interviewed
 const getNotInterviewedStudents = async (req, res) => {
   try {
+    const { academic_year } = req.query;
+    const params = [];
+    const yearFilter = academic_year ? `AND s.academic_year = $1` : '';
+    if (academic_year) params.push(parseInt(academic_year));
+
     const result = await db.query(`
-      SELECT 
-        s.*
-      FROM 
-        student s
-      LEFT JOIN 
-        interview i ON s.student_id = i.student_id
-      WHERE 
-        i.student_id IS NULL
-      ORDER BY 
-        s.faculty, s.program, s.student_id
-    `);
-    
-    res.status(200).json({
-      success: true,
-      count: result.rows.length,
-      data: result.rows
-    });
+      SELECT s.*
+      FROM student s
+      LEFT JOIN interview i ON s.student_id = i.student_id
+      WHERE i.student_id IS NULL ${yearFilter}
+      ORDER BY s.faculty, s.program, s.student_id
+    `, params);
+
+    res.status(200).json({ success: true, count: result.rows.length, data: result.rows });
   } catch (error) {
     console.error('Error getting not interviewed students:', error);
-    res.status(500).json({
-      success: false,
-      message: 'ไม่สามารถดึงข้อมูลนักศึกษาที่ยังไม่ได้รับการสัมภาษณ์ได้',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'ไม่สามารถดึงข้อมูลนักศึกษาที่ยังไม่ได้รับการสัมภาษณ์ได้', error: error.message });
   }
 };
 
@@ -324,43 +316,56 @@ const deleteStudent = async (req, res) => {
   }
 };
 
+// Get distinct academic years
+const getAcademicYears = async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT DISTINCT academic_year
+      FROM student
+      WHERE academic_year IS NOT NULL
+      ORDER BY academic_year DESC
+    `);
+    res.status(200).json({
+      success: true,
+      data: result.rows.map(r => r.academic_year)
+    });
+  } catch (error) {
+    console.error('Error getting academic years:', error);
+    res.status(500).json({ success: false, message: 'ไม่สามารถดึงข้อมูลปีการศึกษาได้', error: error.message });
+  }
+};
+
 // Get interview status summary
 const getInterviewStatusSummary = async (req, res) => {
   try {
+    const { academic_year } = req.query;
+    const params = [];
+    const yearFilter = academic_year ? `WHERE s.academic_year = $1` : '';
+    if (academic_year) params.push(parseInt(academic_year));
+
     const result = await db.query(`
-      SELECT 
+      SELECT
         faculty,
         program,
         COUNT(*) AS total_students,
         SUM(CASE WHEN interviewed THEN 1 ELSE 0 END) AS interviewed_count,
         COUNT(*) - SUM(CASE WHEN interviewed THEN 1 ELSE 0 END) AS not_interviewed_count
-      FROM 
-        (
-          SELECT 
-            s.*, 
-            CASE WHEN i.interview_id IS NOT NULL THEN true ELSE false END AS interviewed
-          FROM 
-            student s
-          LEFT JOIN 
-            interview i ON s.student_id = i.student_id
-        ) AS subquery
-      GROUP BY 
-        faculty, program
-      ORDER BY 
-        faculty, program
-    `);
-    
-    res.status(200).json({
-      success: true,
-      data: result.rows
-    });
+      FROM (
+        SELECT
+          s.*,
+          CASE WHEN i.interview_id IS NOT NULL THEN true ELSE false END AS interviewed
+        FROM student s
+        LEFT JOIN interview i ON s.student_id = i.student_id
+        ${yearFilter}
+      ) AS subquery
+      GROUP BY faculty, program
+      ORDER BY faculty, program
+    `, params);
+
+    res.status(200).json({ success: true, data: result.rows });
   } catch (error) {
     console.error('Error getting summary:', error);
-    res.status(500).json({
-      success: false,
-      message: 'ไม่สามารถดึงข้อมูลสรุปสถานะการสัมภาษณ์ได้',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'ไม่สามารถดึงข้อมูลสรุปสถานะการสัมภาษณ์ได้', error: error.message });
   }
 };
 
@@ -373,5 +378,6 @@ module.exports = {
   createStudent,
   updateStudent,
   deleteStudent,
-  getInterviewStatusSummary
+  getInterviewStatusSummary,
+  getAcademicYears
 };
