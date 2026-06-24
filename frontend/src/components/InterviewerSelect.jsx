@@ -26,7 +26,7 @@ export default function InterviewerSelect() {
         showNotification('ไม่พบรหัสผู้สัมภาษณ์ในระบบ', 'error');
       }
     } catch (error) {
-      showNotification('เกิดข้อผิดพลาด: ' + error.message, 'error');
+      showNotification('ไม่พบรหัสผู้สัมภาษณ์ในระบบ', 'error');
     } finally {
       setLoading(false);
     }
