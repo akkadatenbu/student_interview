@@ -6,6 +6,13 @@ export default function ImportResult({ result, errors }) {
 
   return (
     <div className="mt-6 space-y-4">
+      {/* แจ้งเตือน reset */}
+      {result.reset_to_99 > 0 && (
+        <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm text-orange-700">
+          ✅ Reset นักศึกษาปี <strong>{result.academic_year_import}</strong> จำนวน <strong>{result.reset_to_99} คน</strong> เป็น status 99 ก่อน import
+        </div>
+      )}
+
       {/* สรุปผล */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-blue-50 rounded-lg p-3 text-center">

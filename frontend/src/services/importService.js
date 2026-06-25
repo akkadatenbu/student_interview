@@ -11,11 +11,12 @@ export const importService = {
   },
 
   // Import นักศึกษา
-  async importStudents(file, mapping, mode = 'full') {
+  async importStudents(file, mapping, mode = 'full', academicYearImport = null) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('mapping', JSON.stringify(mapping));
     formData.append('mode', mode);
+    if (academicYearImport) formData.append('academic_year_import', academicYearImport);
     const res = await fetch(`${API_URL}/students/import`, { method: 'POST', body: formData });
     return res.json();
   },

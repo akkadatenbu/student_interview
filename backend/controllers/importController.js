@@ -50,6 +50,8 @@ const importStudents = async (req, res) => {
     }
 
     const mode = req.body.mode || 'full'; // 'full' | 'status'
+    const academic_year_import = req.body.academic_year_import
+      ? parseInt(req.body.academic_year_import) : null;
 
     // validate required fields ตาม mode
     if (mode === 'status') {
@@ -67,6 +69,16 @@ const importStudents = async (req, res) => {
     const rows = await parseCSV(req.file.buffer);
     if (rows.length === 0) {
       return res.status(400).json({ success: false, message: 'ไฟล์ CSV ว่างเปล่า' });
+    }
+
+    // ถ้าเลือกปีการศึกษา → reset นักศึกษาทั้งปีเป็น 99 ก่อน import
+    let resetCount = 0;
+    if (academic_year_import) {
+      const resetResult = await db.query(
+        `UPDATE student SET student_status = 99 WHERE academic_year = $1`,
+        [academic_year_import]
+      );
+      resetCount = resetResult.rowCount;
     }
 
     let inserted = 0;
@@ -142,12 +154,14 @@ const importStudents = async (req, res) => {
       }
     }
 
-    const skipped = errors.length;
-
     return res.json({
       success: true,
       message: 'Import เสร็จสิ้น',
-      result: { inserted, updated, skipped: errors.length, total: rows.length },
+      result: {
+        inserted, updated, skipped: errors.length, total: rows.length,
+        reset_to_99: resetCount,
+        academic_year_import,
+      },
       errors
     });
   } catch (err) {
