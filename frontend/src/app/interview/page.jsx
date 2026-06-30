@@ -19,11 +19,7 @@ export default function InterviewPage() {
       {interviewer && (
         <div className="bg-white p-4 rounded-lg shadow-md mb-4">
           <h2 className="text-xl font-semibold mb-4">ข้อมูลผู้สัมภาษณ์</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className="text-sm text-gray-500">รหัส</p>
-              <p className="font-medium">{interviewer.staff_id}</p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500">ชื่อ-นามสกุล</p>
               <p className="font-medium">{interviewer.staff_name}</p>
