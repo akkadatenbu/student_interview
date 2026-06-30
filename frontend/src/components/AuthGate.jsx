@@ -12,6 +12,9 @@ export default function AuthGate({ children }) {
   // หน้า callback แสดงเองอยู่แล้ว ไม่ต้อง gate ซ้อน
   if (pathname === '/auth/callback') return children;
 
+  // หน้าแรกเป็น public landing — ให้แสดงเองตาม authState (ไม่บังคับ login ก่อนเห็นหน้า)
+  if (pathname === '/') return children;
+
   if (authState === 'checking') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">

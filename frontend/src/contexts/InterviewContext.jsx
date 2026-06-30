@@ -15,7 +15,7 @@ export const InterviewProvider = ({ children }) => {
   const pathname = usePathname();
 
   // ── Auth state: ยืนยันตัวตนผ่าน NBU SSO ──────────────────────
-  // 'checking' | 'ok' | 'loggedOut' | 'unregistered' | 'error'
+  // 'checking' | 'guest' | 'ok' | 'loggedOut' | 'unregistered' | 'error'
   const [authState, setAuthState] = useState('checking');
   const [authMessage, setAuthMessage] = useState('');
   const [interviewer, setInterviewerState] = useState(null);
@@ -27,6 +27,11 @@ export const InterviewProvider = ({ children }) => {
     const token = getToken();
 
     if (!token) {
+      // หน้าแรกเป็น public landing — ไม่บังคับ auto-redirect ให้ผู้ใช้กดปุ่มเข้าสู่ระบบเอง
+      if (pathname === '/') {
+        setAuthState('guest');
+        return;
+      }
       if (isLoggedOut()) {
         setAuthState('loggedOut');
       } else {

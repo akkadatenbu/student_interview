@@ -2,8 +2,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useInterview } from '@/hooks/useInterview';
 
 export default function Home() {
+  const { authState, interviewer, relogin } = useInterview();
+  const loggedIn = authState === 'ok' && interviewer;
+
   return (
     <div className="px-4 sm:px-0">
       <div className="bg-white overflow-hidden shadow rounded-lg">
@@ -13,35 +17,50 @@ export default function Home() {
             <p className="text-xl text-gray-500 mb-6">
               ระบบเก็บข้อมูลการสัมภาษณ์นักศึกษาเพื่อการดูแลและช่วยเหลือ
             </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mb-8">
-              <div className="bg-blue-50 p-6 rounded-lg shadow-sm">
-                <h2 className="text-xl font-semibold text-blue-700 mb-2">สัมภาษณ์นักศึกษา</h2>
-                <p className="text-gray-600 mb-4">
-                  เริ่มการสัมภาษณ์นักศึกษาชั้นปีที่ 1 ทุกคณะและสาขาวิชา
-                </p>
-                <Link
-                  href="/interview"
-                  className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  ไปที่หน้าสัมภาษณ์
-                </Link>
+
+            {loggedIn ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mb-8">
+                <div className="bg-blue-50 p-6 rounded-lg shadow-sm">
+                  <h2 className="text-xl font-semibold text-blue-700 mb-2">สัมภาษณ์นักศึกษา</h2>
+                  <p className="text-gray-600 mb-4">
+                    เริ่มการสัมภาษณ์นักศึกษาชั้นปีที่ 1 ทุกคณะและสาขาวิชา
+                  </p>
+                  <Link
+                    href="/interview"
+                    className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    ไปที่หน้าสัมภาษณ์
+                  </Link>
+                </div>
+
+                <div className="bg-green-50 p-6 rounded-lg shadow-sm">
+                  <h2 className="text-xl font-semibold text-green-700 mb-2">ดูรายงาน</h2>
+                  <p className="text-gray-600 mb-4">
+                    ตรวจสอบผลการสัมภาษณ์ สถิติ และส่งออกข้อมูลเป็น Excel
+                  </p>
+                  <Link
+                    href="/reports"
+                    className="inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    ไปที่หน้ารายงาน
+                  </Link>
+                </div>
               </div>
-              
-              <div className="bg-green-50 p-6 rounded-lg shadow-sm">
-                <h2 className="text-xl font-semibold text-green-700 mb-2">ดูรายงาน</h2>
-                <p className="text-gray-600 mb-4">
-                  ตรวจสอบผลการสัมภาษณ์ สถิติ และส่งออกข้อมูลเป็น Excel
-                </p>
-                <Link
-                  href="/reports"
-                  className="inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            ) : (
+              <div className="max-w-md mx-auto mb-8">
+                <button
+                  onClick={relogin}
+                  disabled={authState === 'checking'}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white text-lg font-medium rounded-lg shadow hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
                 >
-                  ไปที่หน้ารายงาน
-                </Link>
+                  {authState === 'checking' ? 'กำลังตรวจสอบสิทธิ์...' : 'เข้าสู่ระบบด้วย NBU SSO'}
+                </button>
+                <p className="text-xs text-gray-400 mt-3">
+                  ใช้บัญชี Google ของมหาวิทยาลัย (@northbkk.ac.th) เท่านั้น
+                </p>
               </div>
-            </div>
-            
+            )}
+
             <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
               <h2 className="text-xl font-semibold text-gray-700 mb-2">ภาพรวมระบบ</h2>
               <ul className="text-left max-w-lg mx-auto text-gray-600 space-y-2">
