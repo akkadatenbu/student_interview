@@ -5,11 +5,20 @@ const path = require('path');
 const fs = require('fs');
 
 // Get all interviews
+// ⚠️ เห็นเฉพาะคณะตัวเอง ยกเว้นผู้บริหาร (req.isAdmin)
 const getAllInterviews = async (req, res) => {
   try {
     const { academic_year } = req.query;
-    const params = academic_year ? [parseInt(academic_year)] : [];
-    const yearFilter = academic_year ? 'AND s.academic_year = $1' : '';
+    const params = [];
+    let extraFilter = '';
+    if (academic_year) {
+      params.push(parseInt(academic_year));
+      extraFilter += ` AND s.academic_year = $${params.length}`;
+    }
+    if (!req.isAdmin) {
+      params.push(req.interviewer.staff_faculty);
+      extraFilter += ` AND s.faculty = $${params.length}`;
+    }
 
     const result = await db.query(`
       SELECT
@@ -26,7 +35,7 @@ const getAllInterviews = async (req, res) => {
       FROM interview i
       JOIN student s ON i.student_id = s.student_id
       JOIN interviewer staff ON i.interviewer_id = staff.staff_id
-      WHERE s.student_status = 10 ${yearFilter}
+      WHERE s.student_status = 10 ${extraFilter}
       ORDER BY i.interview_date DESC
     `, params);
 
@@ -85,29 +94,35 @@ const getInterviewById = async (req, res) => {
         message: 'ไม่พบข้อมูลการสัมภาษณ์'
       });
     }
-    
+
+    const interview = interviewResult.rows[0];
+
+    // ⚠️ ห้ามดูข้อมูลคณะอื่นนอกจากผู้บริหาร
+    if (!req.isAdmin && interview.faculty !== req.interviewer.staff_faculty) {
+      return res.status(403).json({ success: false, message: 'ไม่มีสิทธิ์ดูข้อมูลการสัมภาษณ์นี้' });
+    }
+
     // Get answers
     const answersResult = await db.query(`
-      SELECT 
+      SELECT
         a.answer_id,
         a.question_id,
         q.question_text,
         q.question_type,
         q.answer_options,
         a.answer_text
-      FROM 
+      FROM
         interview_answer a
-      JOIN 
+      JOIN
         question q ON a.question_id = q.question_id
-      WHERE 
+      WHERE
         a.interview_id = $1
-      ORDER BY 
+      ORDER BY
         q.question_id
     `, [id]);
-    
-    const interview = interviewResult.rows[0];
+
     interview.answers = answersResult.rows;
-    
+
     res.status(200).json({
       success: true,
       data: interview
@@ -162,9 +177,14 @@ const getInterviewByStudentId = async (req, res) => {
         message: 'ไม่พบข้อมูลการสัมภาษณ์ของนักศึกษารหัสนี้'
       });
     }
-    
+
+    // ⚠️ ห้ามดูข้อมูลคณะอื่นนอกจากผู้บริหาร
+    if (!req.isAdmin && interviewResult.rows[0].faculty !== req.interviewer.staff_faculty) {
+      return res.status(403).json({ success: false, message: 'ไม่มีสิทธิ์ดูข้อมูลการสัมภาษณ์นี้' });
+    }
+
     const interviewId = interviewResult.rows[0].interview_id;
-    
+
     // Get answers
     const answersResult = await db.query(`
       SELECT 
@@ -207,16 +227,30 @@ const createInterview = async (req, res) => {
   const client = await db.pool.connect();
   
   try {
-    const { student_id, interviewer_id, answers } = req.body;
-    
+    const { student_id, answers } = req.body;
+    // ⚠️ ห้ามเชื่อ interviewer_id จาก client เด็ดขาด — บังคับใช้ค่าจาก token ที่ verify แล้วเท่านั้น
+    // (เดิมรับ req.body.interviewer_id ตรงๆ ทำให้ปลอมเป็นผู้สัมภาษณ์คนอื่นได้)
+    const interviewer_id = req.interviewer.staff_id;
+
     // Validate input
-    if (!student_id || !interviewer_id || !answers || !Array.isArray(answers)) {
+    if (!student_id || !answers || !Array.isArray(answers)) {
       return res.status(400).json({
         success: false,
-        message: 'กรุณากรอกข้อมูลให้ครบถ้วน (รหัสนักศึกษา, รหัสผู้สัมภาษณ์, คำตอบ)'
+        message: 'กรุณากรอกข้อมูลให้ครบถ้วน (รหัสนักศึกษา, คำตอบ)'
       });
     }
-    
+
+    // ⚠️ ห้ามบันทึกสัมภาษณ์นักศึกษาคณะอื่นนอกจากผู้บริหาร
+    if (!req.isAdmin) {
+      const studentCheck = await client.query('SELECT faculty FROM student WHERE student_id = $1', [student_id]);
+      if (studentCheck.rows.length === 0) {
+        return res.status(404).json({ success: false, message: 'ไม่พบข้อมูลนักศึกษา' });
+      }
+      if (studentCheck.rows[0].faculty !== req.interviewer.staff_faculty) {
+        return res.status(403).json({ success: false, message: 'ไม่มีสิทธิ์สัมภาษณ์นักศึกษาคณะอื่น' });
+      }
+    }
+
     // Start transaction
     await client.query('BEGIN');
     
@@ -339,13 +373,15 @@ const updateInterviewAnswers = async (req, res) => {
     
     // Start transaction
     await client.query('BEGIN');
-    
-    // Check if interview exists
+
+    // Check if interview exists — join เพื่อตรวจคณะของนักศึกษาด้วย
     const checkInterview = await client.query(
-      'SELECT interview_id FROM interview WHERE interview_id = $1',
+      `SELECT i.interview_id, s.faculty
+       FROM interview i JOIN student s ON i.student_id = s.student_id
+       WHERE i.interview_id = $1`,
       [id]
     );
-    
+
     if (checkInterview.rows.length === 0) {
       await client.query('ROLLBACK');
       return res.status(404).json({
@@ -353,7 +389,13 @@ const updateInterviewAnswers = async (req, res) => {
         message: 'ไม่พบข้อมูลการสัมภาษณ์'
       });
     }
-    
+
+    // ⚠️ ห้ามแก้ไขข้อมูลคณะอื่นนอกจากผู้บริหาร
+    if (!req.isAdmin && checkInterview.rows[0].faculty !== req.interviewer.staff_faculty) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ success: false, message: 'ไม่มีสิทธิ์แก้ไขข้อมูลการสัมภาษณ์นี้' });
+    }
+
     // Update each answer
     for (const answer of answers) {
       if (!answer.question_id || answer.answer_text === undefined) {
@@ -477,8 +519,16 @@ const deleteInterview = async (req, res) => {
 const exportInterviewsToExcel = async (req, res) => {
   try {
     const { academic_year } = req.query;
-    const params = academic_year ? [parseInt(academic_year)] : [];
-    const yearFilter = academic_year ? 'AND s.academic_year = $1' : '';
+    const params = [];
+    let extraFilter = '';
+    if (academic_year) {
+      params.push(parseInt(academic_year));
+      extraFilter += ` AND s.academic_year = $${params.length}`;
+    }
+    if (!req.isAdmin) {
+      params.push(req.interviewer.staff_faculty);
+      extraFilter += ` AND s.faculty = $${params.length}`;
+    }
 
     const interviews = await db.query(`
       SELECT
@@ -500,7 +550,7 @@ const exportInterviewsToExcel = async (req, res) => {
       FROM interview i
       JOIN student s ON i.student_id = s.student_id
       JOIN interviewer staff ON i.interviewer_id = staff.staff_id
-      WHERE s.student_status = 10 ${yearFilter}
+      WHERE s.student_status = 10 ${extraFilter}
       ORDER BY i.interview_date DESC
     `, params);
     
@@ -615,7 +665,7 @@ const exportInterviewsToExcel = async (req, res) => {
              s.phone, s.scholarship, s.graduated_school, s.hometown, s.academic_year
       FROM student s
       LEFT JOIN interview i ON s.student_id = i.student_id
-      WHERE i.student_id IS NULL AND s.student_status = 10 ${yearFilter}
+      WHERE i.student_id IS NULL AND s.student_status = 10 ${extraFilter}
       ORDER BY s.faculty, s.program, s.student_id
     `, params);
 

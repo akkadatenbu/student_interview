@@ -5,10 +5,14 @@ import { useState, useRef } from 'react';
 import { importService } from '@/services/importService';
 import ImportResult from './ImportResult';
 
+// หมายเหตุ: ตั้งแต่เปลี่ยนมาใช้ NBU SSO (Option B) ผู้สัมภาษณ์ไม่จำเป็นต้อง import
+// ล่วงหน้าอีกแล้ว — ระบบสร้าง record อัตโนมัติตอน login ครั้งแรก (คณะ/ชื่อมาจาก SSO)
+// ฟอร์มนี้ยังมีไว้เผื่อ import ข้อมูลผู้สัมภาษณ์เก่า/ย้อนหลังเป็นชุดเท่านั้น
 const INTERVIEWER_FIELDS = [
   { key: 'staff_id',      label: 'รหัสอาจารย์/เจ้าหน้าที่', required: true },
   { key: 'staff_name',    label: 'ชื่อ-นามสกุล',              required: true },
   { key: 'staff_faculty', label: 'คณะ/สังกัด',                required: true },
+  { key: 'email',         label: 'อีเมล (@northbkk.ac.th)',  required: false },
 ];
 
 export default function InterviewerImport() {

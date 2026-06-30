@@ -1,5 +1,16 @@
 // frontend/src/services/api.js
+import { getToken } from '@/lib/sso';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+// แนบ Bearer token จาก NBU SSO ให้ทุก request เสมอ (ถ้ามี)
+function authHeaders(extra = {}) {
+  const token = getToken();
+  return {
+    ...extra,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
 
 /**
  * พื้นฐานบริการเรียก API
@@ -12,7 +23,9 @@ export const api = {
    */
   async get(endpoint) {
     try {
-      const response = await fetch(`${API_URL}/${endpoint}`);
+      const response = await fetch(`${API_URL}/${endpoint}`, {
+        headers: authHeaders(),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -36,9 +49,7 @@ export const api = {
     try {
       const response = await fetch(`${API_URL}/${endpoint}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(data),
       });
 
@@ -64,9 +75,7 @@ export const api = {
     try {
       const response = await fetch(`${API_URL}/${endpoint}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(data),
       });
 
@@ -91,6 +100,7 @@ export const api = {
     try {
       const response = await fetch(`${API_URL}/${endpoint}`, {
         method: "DELETE",
+        headers: authHeaders(),
       });
 
       if (!response.ok) {
@@ -112,7 +122,9 @@ export const api = {
    */
   async downloadFile(endpoint) {
     try {
-      const response = await fetch(`${API_URL}/${endpoint}`);
+      const response = await fetch(`${API_URL}/${endpoint}`, {
+        headers: authHeaders(),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();

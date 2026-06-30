@@ -2,9 +2,13 @@
 const db = require('../config/db');
 
 // Get all students
+// ⚠️ จำกัดเฉพาะคณะของผู้สัมภาษณ์ที่ login อยู่ (req.interviewer มาจาก middleware/auth.js
+//    ไม่ใช่ค่าที่ client ส่งมา) ยกเว้นเป็นผู้บริหาร (req.isAdmin) จะเห็นทุกคณะ
 const getAllStudents = async (req, res) => {
   try {
-    // ดึงข้อมูลนักศึกษาพร้อมสถานะการสัมภาษณ์
+    const facultyFilter = req.isAdmin ? '' : 'AND s.faculty = $1';
+    const params = req.isAdmin ? [] : [req.interviewer.staff_faculty];
+
     const result = await db.query(`
       SELECT
         s.*,
@@ -13,11 +17,11 @@ const getAllStudents = async (req, res) => {
         student s
       LEFT JOIN
         interview i ON s.student_id = i.student_id
-      WHERE s.student_status = 10
+      WHERE s.student_status = 10 ${facultyFilter}
       ORDER BY
         s.student_id
-    `);
-    
+    `, params);
+
     res.status(200).json({
       success: true,
       count: result.rows.length,
@@ -73,10 +77,18 @@ const getStudentById = async (req, res) => {
 };
 
 // Get students by faculty
+// ⚠️ ถ้าไม่ใช่ผู้บริหาร ห้ามดูคณะอื่นนอกจากคณะตัวเอง แม้จะระบุ faculty อื่นใน URL ก็ตาม
 const getStudentsByFaculty = async (req, res) => {
   try {
     const { faculty } = req.params;
-    
+
+    if (!req.isAdmin && faculty !== req.interviewer.staff_faculty) {
+      return res.status(403).json({
+        success: false,
+        message: 'ไม่มีสิทธิ์ดูข้อมูลนักศึกษาคณะอื่น'
+      });
+    }
+
     const result = await db.query(`
       SELECT 
         s.*, 
@@ -145,14 +157,22 @@ const getNotInterviewedStudents = async (req, res) => {
   try {
     const { academic_year } = req.query;
     const params = [];
-    const yearFilter = academic_year ? `AND s.academic_year = $1` : '';
-    if (academic_year) params.push(parseInt(academic_year));
+    let yearFilter = '';
+    if (academic_year) {
+      params.push(parseInt(academic_year));
+      yearFilter = `AND s.academic_year = $${params.length}`;
+    }
+    let facultyFilter = '';
+    if (!req.isAdmin) {
+      params.push(req.interviewer.staff_faculty);
+      facultyFilter = `AND s.faculty = $${params.length}`;
+    }
 
     const result = await db.query(`
       SELECT s.*
       FROM student s
       LEFT JOIN interview i ON s.student_id = i.student_id
-      WHERE i.student_id IS NULL AND s.student_status = 10 ${yearFilter}
+      WHERE i.student_id IS NULL AND s.student_status = 10 ${yearFilter} ${facultyFilter}
       ORDER BY s.faculty, s.program, s.student_id
     `, params);
 
@@ -341,8 +361,15 @@ const getInterviewStatusSummary = async (req, res) => {
   try {
     const { academic_year } = req.query;
     const params = [];
-    const yearFilter = academic_year ? `WHERE s.academic_year = $1` : '';
-    if (academic_year) params.push(parseInt(academic_year));
+    let extraFilter = '';
+    if (academic_year) {
+      params.push(parseInt(academic_year));
+      extraFilter += ` AND s.academic_year = $${params.length}`;
+    }
+    if (!req.isAdmin) {
+      params.push(req.interviewer.staff_faculty);
+      extraFilter += ` AND s.faculty = $${params.length}`;
+    }
 
     const result = await db.query(`
       SELECT
@@ -357,7 +384,7 @@ const getInterviewStatusSummary = async (req, res) => {
           CASE WHEN i.interview_id IS NOT NULL THEN true ELSE false END AS interviewed
         FROM student s
         LEFT JOIN interview i ON s.student_id = i.student_id
-        WHERE s.student_status = 10 ${yearFilter.replace('WHERE', 'AND')}
+        WHERE s.student_status = 10 ${extraFilter}
       ) AS subquery
       GROUP BY faculty, program
       ORDER BY faculty, program

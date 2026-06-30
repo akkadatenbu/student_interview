@@ -2,53 +2,92 @@
 'use client';
 
 import { createContext, useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { questionService } from '@/services/questionService';
+import { authService } from '@/services/authService';
+import { getToken, loginWithSSO, logout as ssoLogout, isLoggedOut, relogin as ssoRelogin } from '@/lib/sso';
 
 // สร้าง Context สำหรับข้อมูลการสัมภาษณ์
 export const InterviewContext = createContext();
 
 // Provider Component
 export const InterviewProvider = ({ children }) => {
-  // ต้องเริ่มด้วย null เสมอ (ให้ตรงกับ server render)
+  const pathname = usePathname();
+
+  // ── Auth state: ยืนยันตัวตนผ่าน NBU SSO ──────────────────────
+  // 'checking' | 'ok' | 'loggedOut' | 'unregistered' | 'error'
+  const [authState, setAuthState] = useState('checking');
+  const [authMessage, setAuthMessage] = useState('');
   const [interviewer, setInterviewerState] = useState(null);
 
-  // โหลดจาก sessionStorage หลัง mount (client-side only)
   useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem('interviewer');
-      if (saved) setInterviewerState(JSON.parse(saved));
-    } catch {}
-  }, []);
+    // หน้า callback จัดการ token เอง — ห้าม auto-redirect ซ้อนกัน
+    if (pathname === '/auth/callback') return;
 
-  const setInterviewer = (data) => {
-    setInterviewerState(data);
-    if (data) {
-      sessionStorage.setItem('interviewer', JSON.stringify(data));
-    } else {
-      sessionStorage.removeItem('interviewer');
+    const token = getToken();
+
+    if (!token) {
+      if (isLoggedOut()) {
+        setAuthState('loggedOut');
+      } else {
+        loginWithSSO(); // auto-redirect ทันที ไม่ต้องมีปุ่ม
+      }
+      return;
     }
+
+    authService.getMe()
+      .then((res) => {
+        if (res.success) {
+          setInterviewerState(res.data);
+          setAuthState('ok');
+        } else {
+          setAuthMessage(res.message || 'ไม่สามารถยืนยันตัวตนได้');
+          setAuthState('unregistered');
+        }
+      })
+      .catch((err) => {
+        setAuthMessage(err.message || 'เกิดข้อผิดพลาดในการยืนยันตัวตน');
+        setAuthState('unregistered');
+      });
+  }, [pathname]);
+
+  const isAdmin = interviewer?.isAdmin || false;
+
+  // ออกจากระบบ — ตั้ง flag ป้องกัน auto-redirect วนซ้ำ (ดู lib/sso.js)
+  const logout = () => {
+    ssoLogout();
+    setInterviewerState(null);
+    setStudent(null);
+    setAnswers({});
+    setAuthState('loggedOut');
   };
-  
+
+  const relogin = () => {
+    ssoRelogin();
+  };
+
   // สถานะสำหรับนักศึกษา
   const [student, setStudent] = useState(null);
-  
+
   // สถานะสำหรับคำถามทั้งหมด
   const [questions, setQuestions] = useState([]);
-  
+
   // สถานะสำหรับคำตอบ
   const [answers, setAnswers] = useState({});
-  
+
   // สถานะสำหรับคำถามที่แสดง (ตามเงื่อนไข)
   const [visibleQuestions, setVisibleQuestions] = useState([]);
-  
+
   // สถานะแสดงความคืบหน้า
   const [loading, setLoading] = useState(false);
-  
+
   // สถานะข้อความแจ้งเตือน
   const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
-  
-  // โหลดคำถามเมื่อ component ถูกโหลด
+
+  // โหลดคำถามเมื่อ login สำเร็จแล้วเท่านั้น
   useEffect(() => {
+    if (authState !== 'ok') return;
+
     const loadQuestions = async () => {
       try {
         setLoading(true);
@@ -64,14 +103,14 @@ export const InterviewProvider = ({ children }) => {
         setLoading(false);
       }
     };
-    
+
     loadQuestions();
-  }, []);
-  
+  }, [authState]);
+
   // อัปเดตคำถามที่มองเห็นตามเงื่อนไข
   useEffect(() => {
     if (questions.length === 0) return;
-    
+
     // กรองคำถามตามเงื่อนไข
     const evaluateConditions = () => {
       const visible = questions.filter(question => {
@@ -79,20 +118,20 @@ export const InterviewProvider = ({ children }) => {
         if (!question.condition_logic || question.condition_logic.trim() === '') {
           return true;
         }
-        
+
         try {
           // แยกเงื่อนไขเป็น [questionId, operator, value]
           const conditions = question.condition_logic.split(',').map(c => c.trim());
-          
+
           // ตรวจสอบทุกเงื่อนไข
           return conditions.every(condition => {
             const parts = condition.split(':');
             if (parts.length !== 3) return true;
-            
+
             const [qId, operator, expectedValue] = parts;
             const questionId = parseInt(qId);
             const actualValue = answers[questionId] || '';
-            
+
             switch (operator) {
               case 'eq':
                 return actualValue === expectedValue;
@@ -113,13 +152,13 @@ export const InterviewProvider = ({ children }) => {
           return true; // แสดงคำถามถ้าการประเมินเงื่อนไขมีข้อผิดพลาด
         }
       });
-      
+
       setVisibleQuestions(visible);
     };
-    
+
     evaluateConditions();
   }, [questions, answers]);
-  
+
   // บันทึกคำตอบ
   const saveAnswer = (questionId, value) => {
     setAnswers(prev => ({
@@ -127,13 +166,6 @@ export const InterviewProvider = ({ children }) => {
       [questionId]: value
     }));
   };
-  
-  // ตรวจสอบว่าเป็นผู้บริหาร (เห็นรายงานทุกคณะ)
-  const isAdmin = interviewer
-    ? interviewer.staff_faculty?.includes('บริหาร') ||
-      interviewer.staff_faculty?.includes('สถาบัน') ||
-      interviewer.staff_faculty?.toLowerCase() === 'admin'
-    : false;
 
   // รีเซ็ตข้อมูลการสัมภาษณ์
   const resetInterview = () => {
@@ -141,14 +173,6 @@ export const InterviewProvider = ({ children }) => {
     setAnswers({});
   };
 
-  // ออกจากระบบ
-  const logout = () => {
-    setInterviewer(null);
-    setStudent(null);
-    setAnswers({});
-    sessionStorage.removeItem('interviewer');
-  };
-  
   // แสดงข้อความแจ้งเตือน
   const showNotification = (message, type = 'info') => {
     setNotification({
@@ -156,18 +180,20 @@ export const InterviewProvider = ({ children }) => {
       message,
       type
     });
-    
+
     // ซ่อนข้อความแจ้งเตือนหลังจาก 5 วินาที
     setTimeout(() => {
       setNotification(prev => ({ ...prev, show: false }));
     }, 5000);
   };
-  
+
   return (
     <InterviewContext.Provider
       value={{
+        authState,
+        authMessage,
+        relogin,
         interviewer,
-        setInterviewer,
         isAdmin,
         student,
         setStudent,
@@ -187,4 +213,3 @@ export const InterviewProvider = ({ children }) => {
     </InterviewContext.Provider>
   );
 };
-

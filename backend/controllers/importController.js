@@ -228,6 +228,8 @@ const importInterviewers = async (req, res) => {
         const staff_id = row[mapping.staff_id]?.trim();
         const staff_name = row[mapping.staff_name]?.trim();
         const staff_faculty = row[mapping.staff_faculty]?.trim();
+        // email ไม่บังคับแล้ว (Option B: login ผ่าน SSO สร้าง record เองอัตโนมัติ)
+        const email = mapping.email ? row[mapping.email]?.trim().toLowerCase() || null : null;
 
         if (!staff_id || isNaN(parseInt(staff_id))) {
           errors.push({ row: rowNum, reason: 'staff_id ต้องเป็นตัวเลข' });
@@ -241,15 +243,20 @@ const importInterviewers = async (req, res) => {
           errors.push({ row: rowNum, reason: 'staff_faculty ว่างเปล่า' });
           continue;
         }
+        if (email && !email.endsWith('@northbkk.ac.th')) {
+          errors.push({ row: rowNum, reason: 'email ต้องลงท้ายด้วย @northbkk.ac.th ถ้าระบุ' });
+          continue;
+        }
 
         const result = await db.query(`
-          INSERT INTO interviewer (staff_id, staff_name, staff_faculty)
-          VALUES ($1, $2, $3)
+          INSERT INTO interviewer (staff_id, staff_name, staff_faculty, email)
+          VALUES ($1, $2, $3, $4)
           ON CONFLICT (staff_id) DO UPDATE SET
             staff_name = EXCLUDED.staff_name,
-            staff_faculty = EXCLUDED.staff_faculty
+            staff_faculty = EXCLUDED.staff_faculty,
+            email = EXCLUDED.email
           RETURNING (xmax = 0) AS is_insert
-        `, [parseInt(staff_id), staff_name, staff_faculty]);
+        `, [parseInt(staff_id), staff_name, staff_faculty, email]);
 
         if (result.rows[0].is_insert) {
           inserted++;
@@ -257,7 +264,11 @@ const importInterviewers = async (req, res) => {
           updated++;
         }
       } catch (err) {
-        errors.push({ row: rowNum, reason: err.message });
+        if (err.code === '23505') {
+          errors.push({ row: rowNum, reason: 'อีเมลนี้ถูกใช้กับผู้สัมภาษณ์รายอื่นแล้ว' });
+        } else {
+          errors.push({ row: rowNum, reason: err.message });
+        }
       }
     }
 

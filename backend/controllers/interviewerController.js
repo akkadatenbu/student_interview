@@ -52,8 +52,8 @@ const getInterviewerById = async (req, res) => {
 // Create new interviewer
 const createInterviewer = async (req, res) => {
   try {
-    const { staff_id, staff_name, staff_faculty } = req.body;
-    
+    const { staff_id, staff_name, staff_faculty, email } = req.body;
+
     // Validate input
     if (!staff_id || !staff_name || !staff_faculty) {
       return res.status(400).json({
@@ -61,10 +61,16 @@ const createInterviewer = async (req, res) => {
         message: 'กรุณากรอกข้อมูลให้ครบถ้วน'
       });
     }
-    
+    if (email && !email.toLowerCase().endsWith('@northbkk.ac.th')) {
+      return res.status(400).json({
+        success: false,
+        message: 'อีเมลต้องลงท้ายด้วย @northbkk.ac.th'
+      });
+    }
+
     const result = await db.query(
-      'INSERT INTO interviewer (staff_id, staff_name, staff_faculty) VALUES ($1, $2, $3) RETURNING *',
-      [staff_id, staff_name, staff_faculty]
+      'INSERT INTO interviewer (staff_id, staff_name, staff_faculty, email) VALUES ($1, $2, $3, $4) RETURNING *',
+      [staff_id, staff_name, staff_faculty, email ? email.toLowerCase().trim() : null]
     );
     
     res.status(201).json({
@@ -93,8 +99,8 @@ const createInterviewer = async (req, res) => {
 const updateInterviewer = async (req, res) => {
   try {
     const { id } = req.params;
-    const { staff_name, staff_faculty } = req.body;
-    
+    const { staff_name, staff_faculty, email } = req.body;
+
     // Validate input
     if (!staff_name || !staff_faculty) {
       return res.status(400).json({
@@ -102,10 +108,16 @@ const updateInterviewer = async (req, res) => {
         message: 'กรุณากรอกข้อมูลให้ครบถ้วน'
       });
     }
-    
+    if (email && !email.toLowerCase().endsWith('@northbkk.ac.th')) {
+      return res.status(400).json({
+        success: false,
+        message: 'อีเมลต้องลงท้ายด้วย @northbkk.ac.th'
+      });
+    }
+
     const result = await db.query(
-      'UPDATE interviewer SET staff_name = $1, staff_faculty = $2 WHERE staff_id = $3 RETURNING *',
-      [staff_name, staff_faculty, id]
+      'UPDATE interviewer SET staff_name = $1, staff_faculty = $2, email = $3 WHERE staff_id = $4 RETURNING *',
+      [staff_name, staff_faculty, email ? email.toLowerCase().trim() : null, id]
     );
     
     if (result.rows.length === 0) {

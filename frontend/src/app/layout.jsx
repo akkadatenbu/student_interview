@@ -1,10 +1,10 @@
-// frontend/src/app/layout.jsx
 'use client';
 
 import { Prompt } from 'next/font/google';
 import { InterviewProvider } from '@/contexts/InterviewContext.jsx';
 import Header from '@/components/Header';
 import Notification from '@/components/Notification';
+import AuthGate from '@/components/AuthGate';
 import './globals.css';
 
 const prompt = Prompt({
@@ -25,11 +25,11 @@ export default function RootLayout({ children }) {
           <div className="min-h-screen bg-gray-100">
             <Header />
 
-            {/* Main content */}
+            {/* Main content — AuthGate กันไม่ให้แสดงข้อมูลก่อนยืนยันตัวตนผ่าน NBU SSO สำเร็จ */}
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-              {children}
+              <AuthGate>{children}</AuthGate>
             </main>
-            
+
             {/* Footer */}
             <footer className="bg-white shadow-inner py-5 mt-8 print:hidden">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
                 </div>
               </div>
             </footer>
-            
+
             {/* Notification component */}
             <Notification />
           </div>
@@ -51,10 +51,3 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
-
-
-
-
-
-
-

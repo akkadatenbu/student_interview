@@ -7,7 +7,7 @@ import { Crown, LogOut, UserCircle } from 'lucide-react';
 
 export default function Header() {
   const pathname = usePathname();
-  const { interviewer, isAdmin, logout } = useInterview();
+  const { interviewer, isAdmin, authState, logout } = useInterview();
 
   const navLink = (href, label) => (
     <Link
@@ -67,7 +67,9 @@ export default function Header() {
                 </button>
               </div>
             ) : (
-              <p className="text-sm text-gray-400">กรุณายืนยันรหัสบุคลากรก่อนใช้งาน</p>
+              <p className="text-sm text-gray-400">
+                {authState === 'checking' ? 'กำลังตรวจสอบสิทธิ์...' : ''}
+              </p>
             )}
           </div>
         </div>
