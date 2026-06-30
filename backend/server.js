@@ -17,11 +17,13 @@ const aiRoutes = require('./routes/aiRoutes');
 const addStudentStatus = require('./migrations/add_student_status');
 const addInterviewerEmail = require('./migrations/add_interviewer_email');
 const addInterviewerStaffIdSeq = require('./migrations/add_interviewer_staff_id_seq');
+const fixInterviewerEmailUnique = require('./migrations/fix_interviewer_email_unique');
 
 async function runMigrations() {
   await addStudentStatus();
   await addInterviewerEmail();   // ต้องรันก่อน seq เพราะ seq query อ้างคอลัมน์ staff_id ที่มีอยู่แล้ว
   await addInterviewerStaffIdSeq();
+  await fixInterviewerEmailUnique();
 }
 runMigrations()
   .then(() => console.log('Migrations completed'))
